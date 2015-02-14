@@ -1,0 +1,236 @@
+\chapter{Dynamic Equations}
+
+In this chapter the forces and moments exerted on the aircraft will be presented. The main dynamic components are gravity, aerodynamic reactions and propulsion (also referred to as thrust).
+\begin{equation}
+	\bm{F}_b = \bm{F}_g + \bm{F}_a + \bm{F}_t
+\end{equation}
+
+Before proceeding to any definitions, it is worth mentioning the control input variables. In normal airplane configurations, there are four control dimensions which the pilot can affect. These correspond to three sets of control surfaces (aileron, elevator and rudder) and the throttle command. The notation for these control variables is $\delta_a, \delta_a, \delta_t, \delta_r$. Essentially, these are the input variables to the aircraft model.$\delta_a, \delta_e,$ and $\delta_r$ are usually expressed in degrees of deflection from the neutral (zero) angle and $\delta_t$ is normalized in the (0,1) range.
+Conventions for the positive direction of each control surface are not always consistent. In this text, the proposed positive direction of a control surface is the one which results in a positive moment around each primary axis (aileron - roll right, elevator - pitch up, rudder - yaw right).
+
+\section{Gravity}
+
+In this take, we assume a constant value for the acceleration of gravity, $g=9.805416m/s^2$ \cite[p.~8]{USStdAtm76}. The magnitude of the acceleration of gravity normally varies with altitude and geodetic coordinates, but a constant value is a valid approach for low altitude flight; unmodeled components are negligible to an adequate accuracy. The orientation of the gravity vector is always vertical, towards the center of the Earth, thus in the z-direction in the NED frame.
+\begin{equation}
+	\bm{F}_{g} = \bm{R}_b
+	\begin{bmatrix}
+		0\\ 0 \\mg
+	\end{bmatrix}
+\end{equation}
+\begin{IEEEeqnarray}{rCl}
+	\bm{F}_{gx} &= &-\sin \theta ~m g \IEEEyessubnumber\\
+	\bm{F}_{gy} &= & \sin \phi \cos \theta ~m g  \IEEEyessubnumber\\
+	\bm{F}_{gz} &= & \cos \phi \cos \theta ~m g \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+\begin{equation}\label{eq:gravity}
+	g = g_0
+\end{equation}
+
+
+\section{Aerodynamics}
+This is the defining part of the flight characteristics of an airplane. The aerodynamic response of the airplane is crucial for its stability as well as its maneuverability.
+Aerodynamic forces are presented in two frames of reference. The first is the body frame, whose corresponding forces, $\bm{F_a}$ are used for kinematic calculations. 
+\begin{equation}
+	\bm{F_a} = \begin{bmatrix}
+	F_{ax} \\ F_{ay} \\ F_{az}
+	\end{bmatrix}
+\end{equation}
+Aerodynamic forces are considered to be exerted, under normal operation, at the \emph{center of lift} ($\bm{p}_{CoL}$), a point located on the symmetry plane of the aircraft at one-quarter of the main wing chord.
+
+However, for both historical and practical reasons, the flight characteristics of the airplane and the resulting forces (lift, drag and sideforce) are expressed in the stability frame (see eq.\ref{eq:StabMatrix}). Models of aircraft aerodynamics are also parametrized so as to predict the aerodynamic forces in the stability frame as well.
+
+\begin{equation}
+	\bm{F_s} = \begin{bmatrix}
+	-F_D \\ F_Y \\ -F_L
+	\end{bmatrix}
+\end{equation}
+
+Thus, we can obtain $\bm{F}_a$ via the equation
+\begin{equation}
+	\bm{F}_a = \bm{S}^T \bm{F}_s
+\end{equation}
+\begin{IEEEeqnarray}{rCl}
+	F_{ax} &= & -\cos \alpha F_D -\cos \alpha \sin \beta F_Y + \sin \alpha F_L \IEEEyessubnumber\\
+	F_{ay} &= & -\sin \beta F_D + \cos \beta F_Y \IEEEyessubnumber \\
+	F_{az} &= & -\sin \alpha \cos \beta F_D -\sin \alpha \sin \beta F_Y - \cos \alpha F_L \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+Aerodynamic moments need not be modeled in the stability frame. However, forces are generally not applied on the center of gravity of the aircraft, thus we need to model the moment they apply on it separately.
+Sources of such additional moments are the stability margin (how much forward than the center of lift lies the center of mass), height difference between center of mass and center of lift (for example in a high-wing aircraft) and mass additions and subtractions to the airframe.
+
+\begin{equation}
+	\bm{T_a} = \begin{bmatrix}
+		T_{ax} \\ T_{ay} \\ T_{az}
+		\end{bmatrix}
+		+\left(\bm{p}_{CoL} - \bm{p}_{CG}\right) \times \bm{F}_a
+\end{equation}
+\begin{IEEEeqnarray}{rCl}
+	T_{ax,tot} &= & T_{ax} -dz F_{ay} + dy F_{az}\IEEEyessubnumber\\
+	T_{ay,tot} &= & T_{ay} +dz F_{ax} - dx F_{az}\IEEEyessubnumber\\
+	T_{az,tot} &= & T_{az} -dy F_{ax} + dx F_{ay}\IEEEyessubnumber
+\end{IEEEeqnarray}
+
+The next step in exploring the aerodynamic model is the definition of dynamic pressure. This quantity expresses the pressure exerted by the air moving around the airplane per unit of surface. It is proportional with the density of the air and with the square of the airspeed. Dynamic pressure is a crucial scaling factor for the rest of the aerodynamic equations
+\begin{equation}
+	\bar{q} = \frac{1}{2}\rho V_a^2
+\end{equation}
+
+The air density, $\rho$, is dependent upon altitude but its sea level value is adequate for numeric calculations ($\rho_0 = 1.225 kg/m^3$)
+
+At this point we are able to express the force components as the product of dynamic pressure, the wing surface $S$, and the aerodynamic coefficients of lift, drag and sideforce, $C_L$, $C_D$, $C_Y$. It is very important to appreciate that these coefficients are not constant values; instead, they are functions of the state of the flying body, albeit their dependence from some state variables is more dominant than others. A more detailed explanation is given further down.
+\begin{IEEEeqnarray}{rCl}
+	F_D &= &\bar{q} S C_D \IEEEyesnumber \IEEEyessubnumber \\
+	F_Y &= &\bar{q} S C_Y \IEEEyessubnumber\\
+	F_L &= &\bar{q} S C_L \IEEEyessubnumber
+\end{IEEEeqnarray}
+\begin{IEEEeqnarray}{rCl}
+	C_D &= &C_D(\alpha, q, \delta_e) \IEEEyesnumber \IEEEyessubnumber \\
+	C_Y &= &C_Y(\beta, p, r, \delta_a, \delta_r) \IEEEyessubnumber\\
+	C_L &= &C_L(\alpha, q, \delta_e) \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+The aerodynamic moments are defined in a similar fashion, with the additional inclusion of wingspan $b$ and wing chord $c$. The notation for the moment coefficients may vary from source to source.
+\begin{IEEEeqnarray}{rCl}
+	T_{ax} &= &\bar{q} S b C_l \IEEEyesnumber \IEEEyessubnumber \\
+	T_{ay} &= &\bar{q} S c C_m \IEEEyessubnumber\\
+	T_{az} &= &\bar{q} S b C_n \IEEEyessubnumber
+\end{IEEEeqnarray}
+\begin{IEEEeqnarray}{rCl}
+	C_l &= &C_l(\beta, p, r, \delta_a, \delta_r) \IEEEyesnumber \IEEEyessubnumber \\
+	C_m &= &C_m(\alpha, q, \delta_e) \IEEEyessubnumber\\
+	C_n &= &C_n(\beta, p, r, \delta_a, \delta_r) \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+Finally, a model for the aerodynamic coefficients is provided. Undoubtedly, the most common and established approach is to use multivariable polynomials which are linear with respect to their coefficients. This representation lends itself nicely for parameter identification techniques, such as least-squares flavours, very common in real-world aircraft design and testing.
+\begin{IEEEeqnarray}{rCl} \label{eq:forceCoeff}
+	C_D &= & C_{D0} + C_{D\alpha} \alpha + C_{Dq} \frac{c}{2V_a}q + C_{D\delta_e} \delta_e \IEEEyesnumber \IEEEyessubnumber \\
+	C_Y &= & C_{Y0} + C_{Y\beta} \beta + C_{Yp} \frac{b}{2V_a}p + C_{Yr}\frac{b}{2V_a}r + C_{D\delta_a} \delta_a + C_{Y\delta r} \delta_r \IEEEyessubnumber \\
+	C_L &= & C_{L0} + C_{L\alpha} \alpha + C_{Lq}\frac{c}{2V_a}q + C_{L\delta_e} \delta_e \IEEEyessubnumber 
+\end{IEEEeqnarray}
+
+\begin{IEEEeqnarray}{rCl} \label{eq:torqueCoeff}
+	C_l &= & C_{l0} + C_{l\beta} \beta + C_{lp}\frac{b}{2V_a}p + C_{lr}\frac{b}{2V_a}r + C_{l\delta_a} \delta_a + C_{l\delta_r} \delta_r \IEEEyesnumber \IEEEyessubnumber \\
+	C_m &= & C_{m0} + C_{m\alpha} \alpha + C_{mq} \frac{c}{2V_a}q + C_{m\delta_e} \delta_e \IEEEyessubnumber \\
+	C_n &= & C_{n0} + C_{n\beta} \beta + C_{np} \frac{b}{2V_a}p + C_{nr}\frac{b}{2V_a}r + C_{n\delta_a} \delta_a + C_{n \delta_r} \delta_r \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+The coefficients which correspond to state variables ($C_{D\alpha}$,$C_{Dq}$,$C_{Y\beta}$,$ C_{Yp}$, $C_{Yr}$,$C_{L\alpha}$,$C_{Lq}$,$C_{l\beta}$,
+$C_{lp}$,$C_{lr}$,$C_{m\alpha}$,$C_{mq}$,$C_{n\beta}$,$C_{np}$,$C_{nr}$) in most cases have values such that the resulting forces and moments tend to revert the aircraft to straight and level flight. Hence they are called \emph{stability derivatives}.
+
+On the other hand, coefficients which correspond to the input variables ($C_{D\delta e}$,$C_{D\delta a}$,$ C_{Y\delta r}$,
+$C_{L\delta e}$,$C_{l\delta_a}$,$C_{l\delta_r}$,$C_{m\delta_e}$,$C_{n\delta_a}$,$C_{n \delta_r}$) describe how the aircraft responds to control inputs and are hence called \emph{control derivatives}
+
+Not all of the above derivatives need to be used in the formulation of the aerodynamic model of a plane. Some of them might be statistically insignificant for certain airframes (\cite{Klein2006}). On the other hand, longitudinal quantities usually do not incorporate coefficients of coefficients of lateral quantities and vice versa. This is in-line with the effort of decoupling the aircraft dynamics into a longitudinal and lateral plane, as much as possible, but there also are physical reasons, stemming from the aircraft geometry.
+
+
+\section{Propulsion}
+
+In the case of fixed-wing aircraft, most of the times the thrust is provided by a single propeller, acting upon the longitudinal axis of the aircraft, placed either in the front or the back of the fuselage. This discussion mainly draws from \cite[p.~127]{Allerton2009} but extends its contents from other sources to adapt to an electric power plant.
+Propeller placement does not have an impact on the set of equation which form the model, even in the case of twin-propeller configurations, mounted on the wings.
+
+Usually, thrust is considered to be produced only along the body x-axis, however, this approach may lack realism: it is not uncommon for the propeller to be mounted slightly tilted right and downwards, in order to minimize the counter-moment it produces and which affects the aircraft negatively.
+
+\begin{equation} \label{eq:thrustForce}
+	\bm{F}_t = \begin{bmatrix}
+		F_{tx} \\ F_{ty} \\ F_{tz}
+	\end{bmatrix}
+\end{equation}
+
+In case the propeller axis is aligned with the x-axis of the body frame, the following is also true:
+\begin{IEEEeqnarray}{rCl} 
+	F_{ty} &= & 0 \IEEEyessubnumber \\
+	F_{tz} &= & 0 \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+Naturally, the motor and propeller produce moments. Similarly to the aerodynamic moment analysis, we also have to take into account the displacement of the trust vector from the x-axis of the body frame.
+\begin{equation} \label{eq:thrustTorque}
+	\bm{T_t} = \begin{bmatrix}
+		T_{tx} \\ T_{ty} \\ T_{tz}
+	\end{bmatrix}
+	 + (\bm{p}_{prop}-\bm{p}_{CG})\times \bm{F}_p
+\end{equation}
+\begin{IEEEeqnarray}{rCl}
+	T_{tx,tot} &= & T_{tx} -dz F_{ty} + dy F_{tz}\IEEEyessubnumber\\
+	T_{ty,tot} &= & T_{ty} +dz F_{tx} - dx F_{tz}\IEEEyessubnumber\\
+	T_{tz,tot} &= & T_{tz} -dy F_{tx} + dx F_{ty}\IEEEyessubnumber
+\end{IEEEeqnarray}
+
+
+We opt to consider in our model only the aforementioned counter-moment produced in the x-axis by the propeller and motor, and not gyroscopic effects caused by the spinning propeller disc:
+\begin{IEEEeqnarray}{rCl} 
+	T_{ty} &= & 0 \IEEEyessubnumber \\
+	T_{tz} &= & 0 \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+With the aforementioned assumptions, the moment equations can be simplified into
+\begin{IEEEeqnarray}{rCl}
+	T_{ax,tot} &= & T_{tx}\IEEEyessubnumber\\
+	T_{ay,tot} &= & dz F_{ax}\IEEEyessubnumber\\
+	T_{az,tot} &= & -dy F_{ax}\IEEEyessubnumber
+\end{IEEEeqnarray}
+
+In order to build a detailed and useful thrust model for our aircraft, it is common to break it down into two main components: The propeller, along with its aerodynamic characteristics (after all, it is an airfoil operating inside the atmosphere), and the power plant. In this document, due to the author's research interests, a model for an electric power plant will be presented, comprised of an electric brushless motor, an Electronic Speed Controller (ESC) and a battery.
+
+\subsection{Propeller Model}
+
+Much like the aerodynamics of the airplane lifting surfaces, propeller thrust is dependent upon a coefficient function ($C_T$), the air density ($d$) and its scale (propeller diameter $D$). Additionally, it is proportional to the square of its rotational speed ($n$, in revolutions per second).
+
+\begin{IEEEeqnarray}{rCl}
+	F_{tx} &= & C_T \rho n^2 D^4 \\
+	n &= & \frac{\omega_p}{2 \pi}
+\end{IEEEeqnarray}
+
+This time, the coefficient of thrust function has only one variable, the \emph{advance ratio} ($J$). This quantity is the ratio of the aircraft airspeed to the speed the propeller "screws" itself into the air volume. It is a means to quantify how efficiently the propeller forces itself into the air volume. $C_T$ generally doesn't have a simple shape. It is usually given by propeller manufacturers as a data set, which peaks at the nominal advance ratio and falls off at either side of the advance ratio range. This function can adequately model propeller stall, as well as the windmilling effect.
+
+\begin{IEEEeqnarray}{rCl}
+	C_T &=  & C_T(J) \label{eq:propCT}\\
+	J &= & \frac{V_a}{nD}
+\end{IEEEeqnarray}
+
+In a similar fashion, there is an expression for the power that is consumed by the propeller in order to produce thrust and it uses a coefficient of power ($C_P$).
+
+\begin{IEEEeqnarray}{rCl}
+	P_p &= & C_P \rho n^3 D^5\\
+	C_P & = & C_P(J)\label{eq:propCP}
+\end{IEEEeqnarray}
+
+A detail included in this model, not mentioned in most resources, is the equation which describes how the rotational speed of the propeller changes transiently in time. This is a differential equation of the rotational speed as a function of the difference between the available power from the motor ($P_e$) and the power consumed by the propeller. A necessary parameter is the moment of inertia along the x-axis of the whole engine-rotor and propeller system, which is summed up in the term $J_p$.
+
+\begin{IEEEeqnarray}{rCl}
+	\dot{n} &= & \frac{1}{J_p} \frac{P_e - P_p}{n}
+\end{IEEEeqnarray}
+
+Finally, the expression of propeller moment is simply derived from the ratio of the propeller power over the propeller rotational speed.
+
+\begin{IEEEeqnarray}{rCl}
+	T_{tx} &= & \frac{P_p}{\omega_p}
+\end{IEEEeqnarray}
+
+\subsection{Electric Motor Model}
+
+The most wide-spread motor used in small UAVs is brushless outrunner permanent magnet electrical motor. Usually a 3-constant model is used, but for the sake of completeness, a 4-constant model will be used here, as presented in \cite{Carri2007}.
+
+The input to the motor is the driving voltage, $V_{in}$ and the output is the output power, $P_e$. Naturally, if there is a direct-drive configuration between the motor and the propeller, the motor rotational speed ($n$, in revolutions per second) is the same as that of the propeller.
+
+\begin{IEEEeqnarray}{rCl}
+	n &= & K_v E_i \label{eq:motorKV}\\
+	E_i &= & V_{in} - I_m R_m \label{eq:motorRM}\\
+	P_e &= & E_i I_i \\
+	I_i &= & I_m - I_0 - \frac{E_i}{R_1} \label{eq:motorR1}\\
+	P_{in} &= & V_{in}I_m
+\end{IEEEeqnarray}
+
+\subsection{Battery and Electronic Speed Controller}
+
+Finally, an expression for the overall combination of the battery and ESC is given.
+\begin{itemize}
+\item $V_{bat}$ is the internal battery voltage
+\item $R_{bat}$ is the battery internal resistance
+\item $R_S$ is the ESC in-line resistance
+\item $\delta_t$ is the throttle command, essentially modulating the output voltage
+\end{itemize}
+
+\begin{IEEEeqnarray}{rCl}
+	V_{in} &= & (V_{bat} - I_o (R_{bat} + R_S)) \delta_t \label{eq:battR}
+\end{IEEEeqnarray}

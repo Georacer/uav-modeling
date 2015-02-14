@@ -1,0 +1,161 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HEADER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,oneside,12pt]{report}
+
+%% Language %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[english]{babel}
+%\usepackage[greek]{babel}
+%\usepackage[utf8x]{inputenc}
+\usepackage{lmodern} %Type1-font for non-english texts and characters
+\usepackage[ansinew]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage{kerkis}
+
+%% Formatting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frenchspacing
+\usepackage{parskip}
+%\usepackage{fullpage}
+\usepackage{a4wide}
+%\usepackage{setspace}
+\usepackage{titlesec} % Package to allow chapter number on the same line as chapter title
+\titleformat{\chapter}[hang]  % Package to allow chapter number on the same line as chapter title
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter:}{0.5em}{\filright} % Package to allow chapter number on the same line as chapter title
+
+%\usepackage{subfig}
+
+%% Packages for Graphics & Figures %%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage[section]{placeins}
+\usepackage{float}
+\restylefloat{table}
+%%Float Adjustment
+%two column float page must be 90% full
+\renewcommand\dblfloatpagefraction{.90}
+%two column top float can cover up to 80% of page
+\renewcommand\dbltopfraction{.80}
+%float page must be 90% full
+\renewcommand\floatpagefraction{.90}
+%top float can cover up to 80% of page
+\renewcommand\topfraction{.80}
+%bottom float can cover up to 80% of page
+\renewcommand\bottomfraction{.80}
+%at least X% of a normal page must contain text
+\renewcommand\textfraction{.1}
+%separation between floats and text
+\setlength\dbltextfloatsep{9pt plus 5pt minus 3pt }
+%separation between two column floats and text
+\setlength\textfloatsep{4pt plus 2pt minus 1.5pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows, shapes, automata,petri}
+
+%% Math Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{bm}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
+\usepackage[retainorgcmds]{IEEEtrantools}
+
+%% Packages for document interactivity
+\usepackage{hyperref}
+\hypersetup{
+		colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+\usepackage{url}
+\usepackage[nottoc]{tocbibind} % Add the bibliography in the ToC
+
+% Conditional content
+\usepackage{versions} % Compile content conditionally
+%\usepackage{etoolbox}
+
+% Project automation
+\usepackage[tocentry]{vhistory}
+
+%% Other options to examine %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{usenames, dvipsnames]{color}
+%\usepackage{amssymb}
+%\usepackage{cclicenses}
+%\usepackage{siunitx}
+%\usepackage{ucs}
+%\raggedbottom
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+%\renewcommand{\labelenumi}{\roman{enumi}}
+%\usepackage{sinunitx}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\pagestyle{empty} %No headings for the first pages.
+
+
+%% Title Page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{./title.tex}
+
+%% Dynamic Content %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% The Table of Contents
+\tableofcontents
+\pagestyle{plain} %Now display headings: headings / fancy / ...
+
+%% The List of Figures
+%\clearpage
+%\addcontentsline{toc}{chapter}{List of Figures}
+%\listoffigures
+
+%% The List of Tables
+%\clearpage
+%\addcontentsline{toc}{chapter}{List of Tables}
+%\listoftables
+
+
+%%Main Body %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\renewcommand{\chaptername}{} % Suppress the phrase "Chapter #" at the beginning of every chapter
+%\renewcommand{\thechapter}{} % Suppress chapter numbering
+
+%\nocite{*} % Add uncited bibliography to the bibtex database
+
+%\pagestyle{myheadings}
+
+% Licencing and version
+\clearpage
+\begin{minipage}[c]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{./Figures/by-sa}
+\end{minipage}
+\begin{minipage}[c]{0.7\textwidth}
+	This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.
+\end{minipage}
+
+\vfill
+\begin{center}
+	\textbf{Document version: \vhCurrentVersion}
+\end{center}
+%\centering
+
+
+% Content
+\include{changelog} %Revision updates
+\include{BADintro} %Structural Modeling for Fault Diagnosis
+\include{Chapter2} %Kinematic Equations
+\include{Chapter3} %Dynamic Equations
+\include{Chapter4} %Sensors
+
+%% APPENDICES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+
+%% Bibliography Section %%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{/home/georgezp/texmf/tex/bibtex/bst/plain.bst}
+\bibliography{References}
+
+\end{document}
+

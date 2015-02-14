@@ -1,0 +1,292 @@
+\chapter{Sensory Equipment Equations} \label{chap:Sensors}
+
+In this chapter, the equations that describe the measurements of the various quantities and states via hardware sensors are laid out. Sensors often times use complicated physical phenomena to obtain a measurement of the desired quantity and sometimes the conversion process isn't straightforward. An effort to document relevant information is done here. No effort to model measurement errors is done here.
+Most of the following device descriptions correspond to their MEMS versions.
+
+\section{Inertial Measurements}
+The first and perhaps most used family of sensors in robotics are the inertial sensors. Fusing them allows the extraction of instantaneous orientation and acceleration data which in turn enables dead-reckoning. This is a sensor suite with large cumulative error, but with very high bandwidth, suitable for attitude control. In this chapter, we assume that the sensor axes are aligned with the body axes perfectly. A good source of relevant information is \cite[p.25]{Stevens2003}.
+
+\subsection{Accelerometer}
+An accelerometer installed onboard the aircraft measures the body-frame accelerations \textbf{except} the acceleration of gravity. As a result, when the aircraft is laid to rest on the ground the sensor records acceleration with magnitude of 1G, even though the aircraft isn't moving at all. This is similar to the apparent feeling a human has, feeling the force of his weight pulling him down when resting but feeling weightless while in free-fall.
+
+In the ideal case where the accelerometer is installed at the center of gravity of the aircraft, the recorded acceleration is
+
+\begin{IEEEeqnarray}{rCl} \label{eq:bootstrap}
+	\bm{a}_{b,m} &= &\bm{a}_b - \bm{R}_b\bm{g}\\
+	 &=  & \frac{\bm{F}_b}{m} - \bm{R}_b \bm{g} \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+However, this is an ideal case. Most of the times, the sensor is placed in a point with coordinates $\bm{r}_{acc}$ relative to the center of gravity. The resulting measurement, affected by the aircraft rotational velocity will be
+
+\begin{equation}
+	\bm{a}_{b,m} =  \frac{\bm{F_b}}{m} -  \bm{R}_b\bm{g} + \dot{\bm{\omega}}_b \times \bm{r}_{acc} + \bm{\omega}_b \times (\bm{\omega}_b \times \bm{r}_{acc}) \IEEEyessubnumber \\
+\end{equation}
+which can be expanded into
+\begin{IEEEeqnarray}{rCl}
+	a_{m,x} &= & \frac{F_x}{m}+g\sin\theta -\dot{r}r_{acc,y}+\dot{q}r_{acc,z}+(-r^2-q^2)r_{acc,x}+pqr_{acc,y}+prr_{acc,z} \IEEEyessubnumber\\
+	a_{m,y} &= & \frac{F_y}{m}-\sin\phi\cos\theta +\dot{r}r_{acc,x}-\dot{p}r_{acc,z}+pqr_{acc,x} + (-p^2-r^2)r_{acc,y} +qrr_{acc,z}\IEEEyessubnumber\\
+	a_{m,z} &= & \frac{F_z}{m}-\cos\phi\cos\theta -\dot{q}r_{acc,x}+\dot{p}r_{acc,y}+prr_{acc,x}  +qrr_{acc,y} + (-p^2-q^2)r_{acc,z}\IEEEyessubnumber
+\end{IEEEeqnarray}
+The angular velocity derivatives can be further substituted using eq~\ref{eq:angVelDer}.
+\subsection{Gyroscope}
+Gyroscopes are sensors capable of measuring the rotational velocities of the rigid body they are attached onto. This measurement is unaffected by the location of placement.
+\begin{equation}
+	\bm{\omega_m} = \bm{\omega_b}
+\end{equation}
+
+\subsection{Magnetometer}
+Magnetometers are sensors which measure the magnetic field of the Earth. At any given point on the surface of the Earth the vector field components are known and thus this sensor can be used to extract orientation information. The intensity of the magnetic field (measured usually in nanoTesla) is mostly constant, at about 45~000~nT. However, the direction of the magnetic flux lines changes radically from location to location \cite{wiki:declination}, \cite{wiki:inclination}, \cite{NOAAGeom}. If we express the magnetic field intensity as a vector quantity with North, East and Down components, for a given pair of coordinates
+\begin{equation}
+\bm{h} = [h_N, h_E, h_D]^T
+\end{equation}
+
+then we define as declination the angle
+\begin{equation}
+	dec = \tan^{-1}\left(\frac{h_E}{h_N}\right)
+\end{equation}
+and the inclination as
+\begin{equation}
+	inc = \tan^{-1}\left(\frac{h_D}{\sqrt{h_N^2 + h_E^2}}\right)
+\end{equation}
+
+The measurement of the onboard magnetometer will then be
+\begin{equation} \label{eq:magField}
+	\bm{h}_m = \bm{h}_b =\bm{R}_b \bm{R}_{inc}\bm{R}_{dec} \begin{bmatrix}
+			\lvert \bm{h} \rvert \\ 0 \\ 0
+	\end{bmatrix}
+\end{equation}
+
+\subsection{AHRS}
+There also are hardware solutions which incorporate all three aforementioned sensors and extract an estimation of the Euler angles set.
+\begin{equation}
+	\bm{\Phi_{m}} = \bm{\Phi}
+\end{equation}
+
+\section{GPS Measurements}
+In order to have a reading of the absolute position of the aircraft in the inertial frame, be it the local NED frame or the global frame, defined by latitude and longitude, a GPS sensor is required. This is the only reasonable option, as radio-location is not a viable option for low-cost and low-weight robotic platforms. Whether the system will use a simple GPS receiver, a multi-constellation receiver, differential measurements or even RTK packages improves only the measurement accuracy.
+
+Common quantities reported by a GPS receiver are the longitude, latitude and altitude set. However, these do not correspond to the NED frame. In order to translate them to the north, east and down quantities we need to obtain the data on the curvature of the Earth at the location of interest. The following discussion should be adequate for the needs of a NED frame spanning a few kilometers to each direction of the starting coordinates.
+
+\subsection{Earth Model}
+This discussion draws from \cite{Mulaire2000}, specifically chapter 3 and equations of p.~7.5.
+According to the WGS-84, the Earth is modeled as an ellipsoid which is flatter on the poles and symmetric on the z-axis (the Earth's rotation axis). The semi-major axis is
+\begin{equation}\label{eq:majorAxis}
+	a=6~378~137m
+\end{equation}
+and the flattening, defined as
+\begin{equation}
+	f = \frac{a-b}{a}
+\end{equation}
+is equal to
+\begin{equation}
+	\frac{1}{f} = 298.257222101
+\end{equation}
+$b$ is the semi-minor axis of the ellipsoid and is calculated from the above equations and is equal to
+\begin{equation}
+	b=6~356~752.3142m
+\end{equation}
+The first eccentricity, $e$, is defined as
+\begin{equation}
+	e^2=2f-f^2
+\end{equation}
+
+With these constants available, for any given point on the surface of the Earth with latitude $\phi$, we can calculate the radius of curvature in the prime vertical
+\begin{equation}
+	R_N=\frac{a}{\sqrt{1-e^2\sin^2\phi}}
+\end{equation}
+and the curvature in the meridian
+\begin{equation}
+	R_M = \frac{a(1-e^2)}{(1-e^2\sin^2\phi)^{3/2}}
+\end{equation}
+
+Finally, a small change of latitude $\Delta \phi$ causes a shift in the north-south direction
+\begin{equation}
+	\Delta n = R_M \sin \Delta \phi
+\end{equation}
+and a small change of longitude $\Delta \lambda$ causes a shift in the east-west direction
+\begin{equation}
+	\Delta e = R_N \sin \Delta \lambda
+\end{equation}
+
+For such small angles (in the order of hundredths of a degree), the simplification $\sin \Delta \phi = \Delta \phi$ (in radians) might be acceptable.
+
+For reference, at a latitude of 45degrees, a change of 0.01degree to the North corresponds to a distance of 1111.318m and the same change Eastwards corresponds to 1115.062m.
+
+\textbf{Sidenote:} As of writing, the Google Earth 7.1.2 application for Linux reports a distance of about 1113m between the coordinates (45.00,00.00) and (45.01,00.00) and (curiously) a distance of about 788m(!) between the coordinates (45.00,00.00) and (45.00,00.01). Until further investigation, this results seems to be erroneous.
+
+In case simpler calculations are required, one could use the geometric mean of the semi-major and semi-minor axis
+\begin{equation}
+	\bar{R} = \sqrt{a*b}
+\end{equation}
+and multiply it by the change in angle, regardless of direction.
+\begin{equation}
+	\Delta n = \bar{R} \Delta \phi
+\end{equation}
+For the previous example, the above equation yields 1111.327m, which is very acceptable for many applications.
+
+Regarding altitude, GPS receivers report their vertical distance from the surface of the ellipsoid. Since the local NED frame is placed at the starting altitude, this altitude ($h_0$) should be used to initialize the frames. One could take altitude into account when calculating Cartesian displacements in the NED frame. This is as simple as adding altitude to the local Earth radius. This is demonstrated below.
+
+Summing up, we do the following steps to convert from geodetic coordinates to local coordinates:
+\begin{enumerate}
+	\item Note the starting coordinates $\phi_0$, $\lambda_0$ and altitude $h_0$
+	\item Calculate the radii of curvature $R_N(\phi_0)$ and $R_M(\phi_0)$
+\end{enumerate}
+For each GPS reading $(\phi, \lambda, h)$
+\begin{enumerate}
+	\item Calculate the differences $\Delta \phi = \phi - \phi_0$, $\Delta \lambda = \lambda - \lambda_0$ and $\Delta h = h - h_0$
+	\item Calculate $n = (R_M + h) \sin \Delta \phi$
+	\item Calculate $e = (R_N + h) \sin \Delta \lambda$
+	\item Calculate $d = -\Delta h$
+\end{enumerate}
+
+Having done the above necessary conversions, we can treat the GPS receiver as a sensor which reports displacement in the local NED frame
+\begin{equation}
+	\bm{p_{gps}} = \bm{p}
+\end{equation}
+
+Additionally, most GPS receivers report ground velocities
+\begin{equation}
+	v_{gps} = \lVert [\dot{n}\ \dot{e}]' \rVert
+\end{equation}
+and the direction of travel, also referred to as the \emph{course angle}
+\begin{equation}
+	\chi_{gps} = \operatorname{atan2}\left({\dot{e}},{\dot{n}}\right)
+\end{equation}
+
+
+\section{Atmospheric Measurements}
+
+\subsection{Atmosphere Model}
+The primary resource for atmospheric models is \cite{USStdAtm76}. This technical report is the most accessible and adequately complete document among its "competitors". It provides models for all of the components of the atmosphere, ranging from temperature gradients to molecular synthesis of the air. It partitions the atmosphere into several layers, but we are interested only in the first one, spanning from 0m to approximately 11km. This range in adequate for the majority of UAV operations.
+
+\textbf{Note}: The following discussion uses the gravitational model from \cite[eq.~17]{USStdAtm76}. This model differs from the one presented in \cite{Mulaire2000} in a noticeable way. \cite{USStdAtm76} uses the \emph{Standard Gravity} for the gravitational acceleration on the surface of the Earth, established by the International Committee on Weights and Measures in 1901.
+\begin{equation} \label{eq:stdGravity}
+	g_0 = 9.80665~ m/s^2
+\end{equation}
+This number is used uniformly for all latitudes. It is known that this is a simplification. However, we can proceed to the rest of the calculations and if need arises, switch $g_0$ for the more detailed model from \cite[eq.~4-1]{Mulaire2000}.
+
+Additionally, the US Standard Atmosphere gravity model with respect to altitude uses the inverse square law for gravity decay
+\begin{equation} \label{eq:usstdatmGravAlt}
+	g(Z) = g_0 \left(\frac{r_0}{r_0+Z}\right)
+\end{equation}
+where
+\begin{itemize}
+	\item $Z$ is the geometric altitude above the surface, as reported by GPS systems
+	\item $r_0$ is the radius of the Earth at a latitude where $g_0$ takes its standard value of $9.80665~ m/s^2$
+\end{itemize}
+The respective altitude model in WGS-84 is given in equation (4-3), for relatively low altitudes. Again, one can opt to use that model.
+
+Where all this matters, is in the definition of the \emph{geopotential altitude}, $H$. This is expressed in \emph{geopotential meters} ($m'$), a unit of altitude, lifting a mass by which, always requires the same amount of work, no matter at which altitude this work is performed. Essentially, this expresses how easier it gets to lift masses in the weakening gravity as altitude increases and, in turn, this affects how less densely atmosphere is packed as altitude increases.
+\begin{equation} \label{eq:geopotentialAlt}
+	H = \frac{1}{g_0}\int_{0}^{Z}g\cdot dZ
+\end{equation}
+Combining equations \ref{eq:stdGravity}, \ref{eq:usstdatmGravAlt} and \ref{eq:geopotentialAlt} we get the following conversion expressions between geometric and geopotential altitude
+\begin{equation}
+	H = \frac{r_0 \cdot Z}{r_0 + Z}
+\end{equation}
+\begin{equation}
+	Z = \frac{r_0 \cdot H}{r_0 - H}
+\end{equation}
+
+Next, we need to include a temperature model as a function of altitude.
+\begin{equation}
+	T = T_0 + L_0 \cdot (H - H_0)
+\end{equation}
+where
+\begin{itemize}
+	\item $H_0$ is our initialization altitude
+	\item $T_0$ is the temperature at our initialization altitude. Its nominal value at sea-level is $288.15~K$
+	\item $L_0 = -0.0065~K/m$ is the temperature gradient
+\end{itemize}
+The equation above describes how temperature drops as altitude increases.
+
+Finally, we can express the variation of barometric pressure as a function of geopotential altitude
+\begin{equation}
+	P = P_0\left( \frac{T_{0}}{T(H)} \right) ^ {\left( \frac{g_0 \cdot M_0}{R^* \cdot L_{0}} \right)}
+\end{equation}
+where
+\begin{itemize}
+	\item $P_0$ is the pressure at our initialization altitude. According to the US Standard Atmosphere, at sea-level its value is $P_0 = 101325~N/m^2 = 1013.25~mb$
+	\item $M_0 = 0.0289644~kg/mol$ is the mean molecular weight of the air
+	\item $R^* = 8.31432~N\cdot m / (mol \cdot K)$ is the gas constant
+\end{itemize}
+
+Most importantly, one can solve this equation for $H$ and obtain the geopotential altitude by measuring the barometric pressure.
+\begin{equation}
+	H = \frac{T_0}{L_0}	\left( \left(\frac{P}{P_0}\right)^{\frac{g_0\cdot M_0}{R^* \cdot L_0}} -1\right) + H_0
+\end{equation}
+
+Air density can be obtained from the air pressure model
+\begin{equation}
+	\rho = \frac{P \cdot M_0}{R^* \cdot T}
+\end{equation}
+
+\subsection{Pressure}
+Having defined the atmospheric model, we can now introduce a barometer sensor, which measures the barometric pressure at the UAV altitude.
+\begin{equation}
+	P_{bar} = P
+\end{equation}
+
+\subsection{Temperature}
+Also, thermometers are available, which record the atmospheric temperature and are necessary for the extraction of altitude, through pressure readings. Care is needed however, as electronics are known to warm-up and raise the temperature in the enclosed spaces they are placed. However, this discussion belongs to an fault analysis and will not be expanded upon here.
+\begin{equation}
+	T_m =  T 
+\end{equation}
+What will be noted here is the fact that thermometers can be used to measure the temperature of components as well, such as batteries, ESCs or motors and provide a health status of those components.
+
+\section{Air Data}
+For an efficient and safe aircraft flight, air data measurements are required. These measurements refer to airspeed $\lVert V_a \lVert$, angle of attack $\alpha$ and angle of sideslip $\beta$.
+
+Airspeed is measured using Pitot tubes, which take into account Bernoulli's equation to convert dynamic air pressure into airspeed readings. Essentially, a barometer is used to perform this reading.
+\begin{IEEEeqnarray}{rCl}
+	P_{t} &= & P + \frac{\rho V_a^2}{2} \IEEEyesnumber \IEEEyessubnumber \\
+	P_{t,m} &= & P_t  \IEEEyessubnumber \\	
+\end{IEEEeqnarray}
+
+Aerodynamic angles $\alpha$ and $\beta$ can be measured using appropriate instruments, such as wind vanes, but such sensors are seldom found in medium and small UAVs, due to their size and weight.
+
+\begin{equation}
+	\alpha_m = \alpha
+\end{equation}
+\begin{equation}
+	\beta_m = \beta
+\end{equation}
+
+\section{Distance Measurement}
+Instruments which measure the distance of the UAV from the ground belong to this category. Common types are ultrasonic sensors, laser range finders and LIDARs. Their range varies from a few meters to a few hundred meters and their price range varies accordingly. What all these sensors have in common is that their measurements have a fixed range, varying from $d_{rf,min}$, the minimum reading, up to $d_{rf,max}$, in terms of absolute magnitudes.
+\begin{equation}
+	d_{rf} = \left\{ \begin{array}{ll}
+	d_{rf, min} &,d>d_{rf,min} \\
+	d &,h \in [d_{rf,min}, d_{rf,max}] \\
+	d_{rm,max} &,d<d_{rf,max}
+	\end{array}
+	\right.
+\end{equation}
+Some confusion may be caused by the direction of the comparison ranges, but keep in mind that using the NED frame, $d$ is negative when the airplane is above ground altitude.
+
+\section{Voltage Measurement}
+Voltage Measurement is a very useful means to assess the remaining energy capacity of an onboard battery. Even though the relation between remaining energy and output voltage is not linear, useful conclusions can be extracted.
+
+In general, any voltage level can be measured by such an instrument
+\begin{equation}
+	V_{i,m} = V_i
+\end{equation}
+
+but in the specific case of the battery voltage measurement we have
+\begin{equation}
+	V_{B,m} = V_B - I_o R_B
+\end{equation}
+
+\section{Current Measurement}
+Similarly to voltage measurements, current measurements are available as well. These are useful to monitor the power consumption of the aircraft and, in extension, are a valid means to approach the thrust produced by the power plant.
+
+Usually, current sensors are placed on the battery leads, since their most common occurrence measures only DC current.
+\begin{equation}
+	I_{o,m} = I_o
+\end{equation}
+
+\section{Motor Angular Velocity Measurement}
+Finally, a quantity with great informational content is the rotational velocity of the motor shaft. This can be measured with commercial RPM sensors and can provide information on the thrust produced or even the health status of the motor itself.
+\begin{equation}
+	n_{m} = n
+\end{equation}
