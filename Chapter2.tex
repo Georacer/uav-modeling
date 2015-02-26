@@ -263,8 +263,8 @@ This allows us to introduce an altitude model for the wind magnitude, commonly k
 V_{ws} = V_{ws,h_r} \left(\frac{h}{h_r}\right)^\alpha
 \end{equation}
 This formula describes the increase of the wind magnitude as an exponential function of the altitude, given a measurement of wind magnitude $V_{ws,h_0}$ at altitude $h_0$. $\alpha$ is the Hellmann exponent (roughness exponent), which describes the wind shear effect. Commonly, surface wind magnitude measurements are available for the altitude of 10m, so the above formula becomes.
-\begin{equation}
-V_{ws} = V_{ws,h_10} \left(\frac{h}{h_10}\right)^\alpha
+\begin{equation} \label{eq:staticWind10}
+V_{ws} = V_{ws,h_{10}} \left(\frac{h}{h_{10}}\right)^\alpha
 \end{equation}
 
 Values for $\alpha$ vary with terrain morphology and wind turbulence. Some indicative values can be found in references \cite{Banuelos-Ruedas2011}, \cite{Peterson1978}, \cite{wiki:WindGrad}, \cite{wiki:Wind_profile_power_law}, but it is also claimed that the "1/7th power law" (using a value $\alpha=1/7$) is an adequate approximation for most purposes.

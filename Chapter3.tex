@@ -11,16 +11,16 @@ Conventions for the positive direction of each control surface are not always co
 \section{Gravity}
 
 In this take, we assume a constant value for the acceleration of gravity, $g=9.805416m/s^2$ \cite[p.~8]{USStdAtm76}. The magnitude of the acceleration of gravity normally varies with altitude and geodetic coordinates, but a constant value is a valid approach for low altitude flight; unmodeled components are negligible to an adequate accuracy. The orientation of the gravity vector is always vertical, towards the center of the Earth, thus in the z-direction in the NED frame.
-\begin{equation}
+\begin{equation} \label{eq:gravForce}
 	\bm{F}_{g} = \bm{R}_b
 	\begin{bmatrix}
 		0\\ 0 \\mg
 	\end{bmatrix}
 \end{equation}
 \begin{IEEEeqnarray}{rCl}
-	\bm{F}_{gx} &= &-\sin \theta ~m g \IEEEyessubnumber\\
-	\bm{F}_{gy} &= & \sin \phi \cos \theta ~m g  \IEEEyessubnumber\\
-	\bm{F}_{gz} &= & \cos \phi \cos \theta ~m g \IEEEyessubnumber
+	{F}_{gx} &= &-\sin \theta ~m g \IEEEyessubnumber\\
+	{F}_{gy} &= & \sin \phi \cos \theta ~m g  \IEEEyessubnumber\\
+	{F}_{gz} &= & \cos \phi \cos \theta ~m g \IEEEyessubnumber
 \end{IEEEeqnarray}
 
 \begin{equation}\label{eq:gravity}
