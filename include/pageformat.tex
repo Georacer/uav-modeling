@@ -1,0 +1,50 @@
+%% Including the calc package first to 
+\usepackage{calc} % Code-level counters and variables - http://tug.ctan.org/macros/latex/required/tools/calc.pdf
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Page size and margins
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% My approach to a custom page
+% Specify the page layout geometry
+\settypeblocksize{22cm}{15cm}{*}
+\setulmargins{*}{*}{1.618}
+\setlrmargins{*}{*}{1}
+\setheadfoot{2\onelineskip}{2\onelineskip}
+\setheaderspaces{1.5cm}{*}{*}
+
+%%% The standard ISO page
+%\isopage[9]
+%% With equal lr margins, for oneside documents
+%\setlrmargins{*}{*}{1}
+
+%% Always last command to check number consistensy
+\checkandfixthelayout
+
+\frenchspacing % Enforce single space after period
+
+\setlength{\parindent}{0pt}
+\nonzeroparskip
+
+%\usepackage{fullpage} % Reduce page margins
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Declare a command
+% to print a page-wide horizontal line
+\pagestyle{plain} % Set the page style, concerning headers and footers
+%	plain - Just a plain page number.
+%	empty - Produces empty heads and feet - no page numbers.
+%	headings - Puts running headings on each page. The document style specifies what goes in the headings.
+%	myheadings - You specify what is to go in the heading with the \markboth or the \markright commands. 
+%	Note: \maketitle and \chapter override this to "plain"
+%
+\makeevenfoot{plain}{\href{http://www.basicairdata.eu}{BasicAirData}}{}{\thepage}
+\makeoddfoot{plain}{\href{http://www.basicairdata.eu}{BasicAirData}}{}{\thepage}
+\makefootrule{plain}{\textwidth}{.4pt}{\footruleskip}
+
+%\usepackage{setspace} % Utilities to change line spacing
+%http://texblog.org/2011/09/30/quick-note-on-line-spacing/
+
+% package titlesec not needed
+%\usepackage{titling} % Title formatting options
+%\setlength{\droptitle}{-2cm} % Move the vertical posistion of the title
+%\pretitle{\begin{flushleft}\Huge} % Pre-title formatting
+%	\posttitle{\par\end{flushleft}\vskip 0.0em} % Post title formatting to close \pretitle

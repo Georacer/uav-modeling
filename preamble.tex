@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HEADER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage[l2tabu, orthodox]{nag} %% Package for
+% checking deprecated packages
+
+\documentclass[a4paper,oneside,12pt]{memoir} % An article
+% printed in 12pt characters, in A4 paper for 1-sided prints.
+
+%% Page and text structure formatting %%%%%%%%%%%%%%%%%%%%%%%
+\input{include/pageformat.tex}
+
+%% Language and character format %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/langformat.tex}
+
+%% Packages for Graphics & Figures %%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/graphics.tex}
+
+%% Math Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/math.tex}
+
+%% Packages for document interactivity %%%%%%%%%%%%%%%%%%%%%%
+\input{include/interact.tex}
+
+%% Document links %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/references.tex}
+
+%% Authoring utilities %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/authoring.tex}
+
+%% Glossary input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{glossary.tex}
+
+%% Other options to examine %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\usepackage{usenames, dvipsnames]{color}
+%\usepackage{cclicenses}
+%\usepackage{ucs}
+%\raggedbottom
+%\renewcommand{\labelenumi}{\roman{enumi}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Make the title page
+\input{include/title.tex}
+
+%% Dynamic Content %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{plain} %Now display headings: headings / fancy / ...
+
+%% The List of Figures
+%\clearpage
+%\addcontentsline{toc}{chapter}{List5 of Figures}
+%\listoffigures
+
+%% The List of Tables
+%\clearpage
+%\addcontentsline{toc}{chapter}{List of Tables}
+%\listoftables
+
+% Licencing and version
+\clearpage
+\begin{minipage}[c]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{./figures/by-sa}
+\end{minipage}
+\begin{minipage}[c]{0.7\textwidth}
+	This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.
+\end{minipage}
+
+\vfill
+\begin{center}
+	\textbf{Document version: \vhCurrentVersion}
+\end{center}
+%\centering
+
+
+% Content
+\frontmatter
+\printnoidxglossaries
+\cleardoublepage
+\listoftodos
+\clearpage
+\tableofcontents
+% \clearpage
+% \listoffigures
+\include{changelog} %Revision updates
+
+% Main text body
+\mainmatter
+\include{BADintro} %Structural Modeling for Fault Diagnosis
+\include{kinematics} %Kinematic Equations
+\include{dynamics} %Dynamic Equations
+\include{sensors} %Sensors
+
+\backmatter
+%\input{appendix.tex}
+\input{bibliography.tex}
+
+\end{document}

@@ -1,0 +1,33 @@
+
+\usepackage{graphicx} % Extended graphic inclusion commands
+\usepackage[section]{placeins} % Constrain floats within their section
+\usepackage{caption} % Customization options for captions
+\usepackage{float} % Better handling and creation of float objects
+\restylefloat{table} % Apply float-package options to old tables
+\restylefloat{figure} % Apply float-package options to old figures %% Caution! Causes problems in figures in minipages
+%%Float Adjustment
+%two column float page must be 90% full
+\renewcommand\dblfloatpagefraction{.90}
+%two column top float can cover up to 80% of page
+\renewcommand\dbltopfraction{.80}
+%float page must be 90% full
+\renewcommand\floatpagefraction{.90}
+%top float can cover up to 80% of page
+\renewcommand\topfraction{.80}
+%bottom float can cover up to 80% of page
+\renewcommand\bottomfraction{.80}
+%at least X% of a normal page must contain text
+\renewcommand\textfraction{.1}
+%separation between two column floats and text
+\setlength\dbltextfloatsep{9pt plus 5pt minus 3pt }
+%separation between floats and text
+\setlength\textfloatsep{20pt plus 2.0pt minus 4.0pt}
+
+\usepackage{tikz}
+\usepackage{wrapfig} % Wrapping figures with text
+
+\counterwithout{figure}{chapter} % Don't number figures with chapter number
+
+\usepackage{epstopdf}
+
+\usepackage[percent]{overpic} % Used for in-picture annotation

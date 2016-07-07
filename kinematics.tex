@@ -13,7 +13,7 @@ In contrast, the origin of the so-called body-axes $\mathcal{F}_B$ is the center
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.45\linewidth]{Figures/Plane_Axes}
+\includegraphics[width=0.45\linewidth]{figures/Plane_Axes}
 \caption{Aircraft body axes}
 \label{fig:Plane_Axes}
 \end{figure}
@@ -43,6 +43,12 @@ Equation \eqref{eq:posDot} can be broken down onto its three elements as
 	\dot{d} &= & (-\sin\theta)u + (\sin\phi \cos\theta)v + (\cos\phi \cos\theta)w \IEEEyessubnumber
 \end{IEEEeqnarray}
 
+\begin{lstlisting}[style=C-style]
+	n_dot = (cos(theta)*cos(psi))*u + (-cos(phi)*sin(psi)+sin(phi)*sin(theta)*cos(psi))*v + (sin(phi)*sin(psi)+cos(phi)*sin(theta)*cos(psi))*w
+	e_dot = (cos(theta)*sin(psi))*u + (cos(phi)*cos(psi)+sin(phi)*sin(theta)*sin(psi))*v + (-sin(phi)*cos(psi)+cos(phi)*sin(theta)*sin(psi))*w
+	d_dot = (-sin(theta))*u + (sin(phi)*cos(theta))*v + (cos(phi)*cos(theta))*w
+\end{lstlisting}
+
 We see that the rotation matrix $\bm{R_B}$ is dependent upon three variables, $\phi$ , $\theta$ and $\psi$ . These are explained below.
 
 \section{Orientation}
@@ -62,7 +68,7 @@ This convention is called the \emph{Tait-Bryan angles} \cite{Berner2008}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.35\linewidth]{Figures/Euler_Anlges_2}
+\includegraphics[width=0.35\linewidth]{figures/Euler_Anlges_2}
 \caption{Euler angles}
 \label{fig:Euler_Anlges_2}
 \end{figure}
