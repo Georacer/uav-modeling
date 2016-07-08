@@ -51,6 +51,22 @@ Equation \eqref{eq:posDot} can be broken down onto its three elements as
 
 We see that the rotation matrix $\bm{R_B}$ is dependent upon three variables, $\phi$ , $\theta$ and $\psi$ . These are explained below.
 
+In case the linear velocities need to be extracted from the position derivatives, the inverse relation can be used.
+
+\begin{IEEEeqnarray}{rCl}
+	u &=& (\cos \theta \cos \psi) \dot{n} + (\cos \theta \sin \psi) \dot{e} + (-\sin \theta)\dot{d} \IEEEyesnumber \IEEEyessubnumber\\
+	v &=& (\sin \phi \sin \theta \cos \psi - \cos \phi \sin \psi)\dot{n} \nonumber \\
+	&& +\> (\sin \phi \sin \theta \sin \psi + \cos \phi \cos \psi)\dot{e} + (\sin \phi \cos \theta)\dot{d} \IEEEyessubnumber \\
+	w &=& (\cos \phi \sin \theta \cos \psi + \sin \phi \sin \psi)\dot{n} \nonumber \\
+	&& \> (\cos \phi \sin \theta \sin \psi - \sin \phi \cos \psi)\dot{e} + (\cos \phi \cos \theta)\dot{d} \IEEEyessubnumber
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	u = (cos(theta)*cos(psi))*dot_n + (cos(theta)*sin(psi))*dot_e + (-sin(theta))*dot_n
+	v = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*dot_n + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*dot_e + (sin(phi)*cos(theta))*dot_d
+	w = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*dot_n + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*dot_e + (cos(phi)*cos(theta))*dot_d
+\end{lstlisting}
+
 \section{Orientation}
 
 We use Euler angle notation to express the orientation of the aircraft. Roll, pitch and yaw are denoted as $\phi$, $\theta$ and $\psi$ respectively.
@@ -87,6 +103,12 @@ The individual angle propagation equations are
 	\dot{\psi} &= & \frac{\sin\phi}{\cos\theta} q + \frac{\cos\phi}{\cos\theta} r \IEEEyessubnumber 
 \end{IEEEeqnarray}
 
+\begin{lstlisting}[style=C-style]
+	dot_phi = p + (tan(theta)*sin(phi))*q + (tan(theta)*cos(phi))*r
+	dot_theta = (cos(phi))*q + (-sin(phi))*r
+	dot_psi = (sin(phi)/cos(theta))*q + (cos(phi)/cos(theta))*r
+\end{lstlisting}
+
 and equivalenty, $ \mathcal{E}(\bm{\Phi})$ is written as
 \begin{equation}
 \mathcal{E}(\bm{\Phi}) = \begin{bmatrix}
@@ -105,34 +127,10 @@ We define the angular velocity vector as
 
 and its time derivative is
 \begin{equation}  \label{eq:angVelDer}
-	\dot{\bm{\omega}} = \frac{1}{\bm{J}}\left(\bm{T_b} - \bm{\omega} \times (\bm{J} \bm{\omega_b})\right)
+	\dot{\bm{\omega}} = \frac{1}{\bm{J}}\left(\bm{T_b} - \bm{\omega} \times (\bm{J} \bm{\omega})\right)
 \end{equation}
+
 This equation incorporates the inertia matrix $\bm{J}$ and the input torque, expressed in the body axes $T_b$.
-
-By spreading out the lines of the above vector equation we get
-
-\begin{IEEEeqnarray}{rCl}
-	\dot{p} &= & \frac{1}{\Gamma} \left[J_{xz} (J_x - J_y + J_z)pq - (J_z(J_z-J_y)+J_{xz}^2)qr + J_z T_x + J_{xz}T_z\right] \IEEEyessubnumber \\
-	\dot{q} &= & \frac{1}{J_y} \left[(J_z - J_x)pr - J_{xz}(p^2 - r^2)+ T_y\right] \IEEEyessubnumber \\
-	\dot{r} &= & \frac{1}{\Gamma} \left[((J_x - J_y)J_x + J_{xz}^2)pq - J_{xz}(J_x - J_y + J_z)qr + J_{xz}T_x + J_x T_z\right] \IEEEyessubnumber
-\end{IEEEeqnarray}
-
-To facilitate the calculation of cross products we may use this identity:
-\begin{equation}
-	\bm{\omega}\times \bm{v} = \begin{bmatrix}
-		0  & -r & p  \\
-		r  & 0  & -p \\
-		-q & p  & 0
-	\end{bmatrix} \bm{v}
-\end{equation}
-Where $\bm{v}$ is an arbitrary vector. Similarly,
-\begin{equation}
-	\bm{\omega} \times (\bm{\omega} \times \bm{v}) = \begin{bmatrix}
-		-r^2-q^2 & pq & pr \\
-		pq & -p^2 -r^2 & qr\\
-		pr & qr & -p^2-q^2
-	\end{bmatrix} \bm{v}
-\end{equation}
 
 The inertia matrix is defined as
 \begin{equation}
@@ -144,6 +142,7 @@ The inertia matrix is defined as
 	\end{bmatrix}
 \end{equation}
 Commonly, the inertia matrix in fixed-wing aircraft is considered to have zero elements in the x-y and y-z direction, since they are symmetric about the x-z plane.
+Still, in this section, the full, non-symmetric matrix of inertial will be used, as this is the most general case.
 \begin{equation}\label{eq:inertiaMat}
 	\bm{J} = 
 	\begin{bmatrix}
@@ -152,10 +151,127 @@ Commonly, the inertia matrix in fixed-wing aircraft is considered to have zero e
 		-J_{xz} & 0   & J_z
 	\end{bmatrix}
 \end{equation}
-	
+
+Its inverse is
 \begin{equation}
-	\Gamma = J_x J_z - J_{xz}^2
+	\bm{J}^{-1} = \frac{1}{det(\bm{J})}
+	\begin{bmatrix}
+		{j}_{yy}\, {j}_{zz} - {j}_{yz}\, {j}_{zy} & {j}_{xz}\, {j}_{zy} - {j}_{xy}\, {j}_{zz} & {j}_{xy}\, {j}_{yz} - {j}_{xz}\, {j}_{yy}\\
+		{j}_{yz}\, {j}_{zx} - {j}_{yx}\, {j}_{zz} & {j}_{xx}\, {j}_{zz} - {j}_{xz}\, {j}_{zx} & {j}_{xz}\, {j}_{yx} - {j}_{xx}\, {j}_{yz}\\
+		{j}_{yx}\, {j}_{zy} - {j}_{yy}\, {j}_{zx} & {j}_{xy}\, {j}_{zx} - {j}_{xx}\, {j}_{zy} & {j}_{xx}\, {j}_{yy} - {j}_{xy}\, {j}_{yx}
+	\end{bmatrix}
 \end{equation}
+\begin{lstlisting}[style=C-style]
+	Ji[0] = (J[4]*J[8] - J[5]*J[7])/detJ
+	Ji[1] = (J[2]*J[7] - J[1]*J[8])/detJ
+	Ji[2] = (J[1]*J[5] - J[2]*J[4])/detJ
+	Ji[3] = (J[5]*J[6] - J[3]*J[8])/detJ
+	Ji[4] = (J[0]*J[8] - J[2]*J[6])/detJ
+	Ji[5] = (J[2]*J[3] - J[0]*J[5])/detJ
+	Ji[6] = (J[3]*J[7] - J[4]*J[6])/detJ
+	Ji[7] = (J[1]*J[6] - J[0]*J[7])/detJ
+	Ji[8] = (J[0]*J[4] - J[1]*J[3])/detJ
+\end{lstlisting}
+
+where
+
+\begin{equation}
+	det(\bm{J}) = \mathrm{j}_{xx}\, \mathrm{j}_{yy}\, \mathrm{j}_{zz} - \mathrm{j}_{xx}\, \mathrm{j}_{yz}\, \mathrm{j}_{zy} - \mathrm{j}_{xy}\, \mathrm{j}_{yx}\, \mathrm{j}_{zz} + \mathrm{j}_{xy}\, \mathrm{j}_{yz}\, \mathrm{j}_{zx} + \mathrm{j}_{xz}\, \mathrm{j}_{yx}\, \mathrm{j}_{zy} - \mathrm{j}_{xz}\, \mathrm{j}_{yy}\, \mathrm{j}_{zx}	
+\end{equation}
+\begin{lstlisting}{style=C-style}
+	detJ = J[0]*J[4]*J8] - J[0]*J[5]*J[7] - J[1]*J[3]*J[8] + J[1]*J[5]*J[6] + J[2]*J[3]*J[7] - J[2]*J[4]*J[6]
+\end{lstlisting}
+
+Cross products can be written in matrix form, when implemented as explicit matrix multiplications:
+\begin{equation}
+\bm{\omega}\times \bm{v} = \begin{bmatrix}
+0  & -r & p  \\
+r  & 0  & -p \\
+-q & p  & 0
+\end{bmatrix} \bm{v}
+\end{equation}
+Where $\bm{v}$ is an arbitrary vector. Similarly,
+\begin{equation}
+\bm{\omega} \times (\bm{\omega} \times \bm{v}) = \begin{bmatrix}
+-r^2-q^2 & pq & pr \\
+pq & -p^2 -r^2 & qr\\
+pr & qr & -p^2-q^2
+\end{bmatrix} \bm{v}
+\end{equation}
+
+To facilitate derivations, we define
+\begin{IEEEeqnarray}{rCl}
+	\bm{C} &=& \bm{\omega}\times(\bm{J}\bm{\omega}) \\
+	&=&
+		\begin{bmatrix}
+			0 & -r & q \\
+			r & 0 & -p \\
+			-q & p & 0 
+		\end{bmatrix} \left(
+		\begin{bmatrix}
+			j_{xx} + j_{xy} + j_{xz} \\
+			j_{yx} + j_{yy} + j_{yz} \\
+			j_{zx} + j_{zy} + j_{zz}
+		\end{bmatrix}
+		\begin{bmatrix}
+			p \\ q \\ r
+		\end{bmatrix} \right)\\
+	&=& \begin{bmatrix}
+		q \left(j_{zx} p + j_{zy} q + j_{zz} r\right) - r \left(j_{yx} p + j_{yy} q + j_{yz} r\right)\\ 
+		r \left(j_{xx} p + j_{xy} q + j_{xz} r\right) - p \left(j_{zx} p + j_{zy} q + j_{zz} r\right)\\ 
+		p \left(j_{yx} p + j_{yy} q + j_{yz} r\right) - q \left(j_{xx} p + j_{xy} q + j_{xz} r\right) 		
+	\end{bmatrix}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	C[0] = q*(J[6]*p + J[7]*q + J[8]*r) - r*(J[3]*p + J[4]*q + J[5]*r)
+	C[1] = r*(J[0]*p + J[1]*q + J[2]*r) - p*(J[6]*p + J[7]*q + J[8]*r)
+	C[2] = p*(J[3]*p + J[4]*q + J[5]*r) - q*(J[0]*p + J[1]*q + J[2]*r)
+\end{lstlisting}
+
+
+and
+\begin{equation}
+	\bm{J}^{-1} =
+	\begin{bmatrix}
+		j^i_{11} & j^i_{12} & j^i_{13} \\
+		j^i_{21} & j^i_{22} & j^i_{23} \\
+		j^i_{31} & j^i_{32} & j^i_{33}
+	\end{bmatrix}
+\end{equation}
+
+Thus, \ref{eq:angVelDer} becomes
+\begin{IEEEeqnarray}{rCl}
+	\dot{\bm{\omega}} &=&
+	\begin{bmatrix}		
+		j^i_{11} & j^i_{12} & j^i_{13} \\
+		j^i_{21} & j^i_{22} & j^i_{23} \\
+		j^i_{31} & j^i_{32} & j^i_{33}
+	\end{bmatrix}
+	\left(
+	\begin{bmatrix}
+		l \\ m \\ n
+	\end{bmatrix} - 
+	\begin{bmatrix}
+		c_{1} \\
+		c_{2} \\
+		c_{3}
+	\end{bmatrix}
+	\right) \Leftrightarrow \\
+	&=&  \begin{bmatrix}
+		j^i_{11} \left(l - c_{1}\right) + j^i_{12} \left(m - c_{2}\right) + j^i_{13} \left(n - c_{3}\right)\\
+		j^i_{21} \left(l - c_{1}\right) + j^i_{22} \left(m - c_{2}\right) + j^i_{23} \left(n - c_{3}\right)\\
+		j^i_{31} \left(l - c_{1}\right) + j^i_{32} \left(m - c_{2}\right) + j^i_{33} \left(n - c_{3}\right)
+	\end{bmatrix}	
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	dot_p = Ji[0]*(l-C[0]) + Ji[1]*(m - C[1]) + Ji[2]*(n - C[2])
+	dot_q = Ji[3]*(l-C[0]) + Ji[4]*(m - C[1]) + Ji[5]*(n - C[2])
+	dot_r = Ji[6]*(l-C[0]) + Ji[7]*(m - C[1]) + Ji[8]*(n - C[2])
+\end{lstlisting}
+
+
 
 
 \section{Linear Velocity}
