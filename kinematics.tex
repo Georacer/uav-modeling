@@ -44,12 +44,12 @@ Equation \eqref{eq:posDot} can be broken down onto its three elements as
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	n_dot = (cos(theta)*cos(psi))*u + (-cos(phi)*sin(psi)+sin(phi)*sin(theta)*cos(psi))*v + (sin(phi)*sin(psi)+cos(phi)*sin(theta)*cos(psi))*w
-	e_dot = (cos(theta)*sin(psi))*u + (cos(phi)*cos(psi)+sin(phi)*sin(theta)*sin(psi))*v + (-sin(phi)*cos(psi)+cos(phi)*sin(theta)*sin(psi))*w
-	d_dot = (-sin(theta))*u + (sin(phi)*cos(theta))*v + (cos(phi)*cos(theta))*w
+	dot_north = (cos(theta)*cos(psi))*u + (-cos(phi)*sin(psi)+sin(phi)*sin(theta)*cos(psi))*v + (sin(phi)*sin(psi)+cos(phi)*sin(theta)*cos(psi))*w
+	dot_east = (cos(theta)*sin(psi))*u + (cos(phi)*cos(psi)+sin(phi)*sin(theta)*sin(psi))*v + (-sin(phi)*cos(psi)+cos(phi)*sin(theta)*sin(psi))*w
+	dot_down = (-sin(theta))*u + (sin(phi)*cos(theta))*v + (cos(phi)*cos(theta))*w
 \end{lstlisting}
 
-We see that the rotation matrix $\bm{R_B}$ is dependent upon three variables, $\phi$ , $\theta$ and $\psi$ . These are explained below.
+We see that the rotation matrix $\bm{R_b}$ is dependent upon three variables, $\phi$ , $\theta$ and $\psi$. These are explained below.
 
 In case the linear velocities need to be extracted from the position derivatives, the inverse relation can be used.
 
@@ -293,6 +293,12 @@ which is equivalent to
 	\dot{w} &= & qu -pv + \frac{F_bz}{m} \IEEEyessubnumber
 \end{IEEEeqnarray}
 
+\begin{lstlisting}[style=C-style]
+	dot_u = r*v - q*w + Fx/m
+	dot_v = -r*u + p*w + Fy/m
+	dot_w = q*u - p*v + Fz/m
+\end{lstlisting}
+
 We need to define the wind velocity, in the body frame. This is the velocity of the air-mass, moving above the ground, expressed in the body axes.
 \begin{equation}
 	\bm{v_w} = [u_w\ v_w\ w_w]^T
@@ -302,6 +308,12 @@ The resulting relative (air)speed of the aircraft is
 \begin{equation}
 	\bm{v_r} = \bm{v}_B - \bm{v}_w
 \end{equation}
+
+\begin{lstlisting}[style=C-style]
+	u_r = u - u_w
+	v_r = v - v_w
+	w_r = w - w_w
+\end{lstlisting}
 
 Relative velocity is a very important quantity in aeronautics, as every aspect of the aircraft's aerodynamic response depends on it, rather than the inertial speed.
 
@@ -318,6 +330,12 @@ Based on the relative velocity, we define three more quantities:
 	\beta &= &\sin^{-1}\left(\frac{v_r}{V_a}\right) \IEEEyessubnumber \\
 	V_a &= &\lVert[u_r\ v_r\ w_r]^T\rVert
 \end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+		alpha = atan2(w_r,u_r)
+		beta = asin(v_r/V_a)
+		V_a = sqrt(u_r*u_r + v_r*v_r + w_r*w_r)
+\end{lstlisting}
 
 Using these angles, a new frame of reference can be constructed, the Stability frame $\mathcal{F}_S$. The relative speed components (expressed in the body frame) can be constructed from the airspeed (expressed in the stability frame) using the following rotation:
 
@@ -340,24 +358,45 @@ V_a \\ 0 \\ 0
 
 \section{Mass Distribution}
 
-It is useful to model the mass distribution of our aircraft. It has a nominal mass $m_{nom}$, placed at the center of gravity, the origin of the body axes. Any extra weights, such as payloads, debris, or component detachment can be modeled with extra masses $m_i$. Under this definition, $m_i$ is allowed to be negative.
+It is useful to model the mass distribution of our aircraft. It has a nominal mass $m_{nom}$, placed at the center of mass, the origin of the body axes. Any extra weights, such as payloads, debris, or component detachment can be modeled with extra masses $m_i$. Under this definition, $m_i$ is allowed to be negative.
+The overall mass and center of mass are
 
 \begin{IEEEeqnarray}{rCl}\label{eq:masses}
 	m &= & m_{nom} + \sum m_i \IEEEyesnumber \IEEEyessubnumber \\
-	\bm{p}_{m,nom} &= &[0\ 0\ 0]^T \IEEEyessubnumber \\
-	\bm{p}_{CG} &= & \frac{1}{m} \left( \sum \bm{p}_i m_i\right)
+	\bm{p}_{m_{nom}} &= &[0\ 0\ 0]^T \IEEEyessubnumber \\
+	\bm{p}_{CM} &= & \frac{1}{m} \left( \sum \bm{p}_{m_i} m_i\right)
 \end{IEEEeqnarray}
 
-Naturally, mass additions also affect the matrix of inertia of the aircraft. A mass $m_{e}$ planed at the point $p_{e} = [x_{e}, y_{e}, z_{e}]^T$ perturbs the matrix of inertia by
+\begin{lstlisting}[style=C-style]
+	m = m_nom + m_i
+	p_cm_x = 1/m*(x_mi*m_i)
+	p_cm_y = 1/m*(y_mi*m_i)
+	p_cm_z = 1/m*(z_mi*m_i)
+\end{lstlisting}
+
+Naturally, mass additions also affect the matrix of inertia of the aircraft. A mass $m_{i}$ planted at the point $p_{m_i} = [x_{m_i}, y_{m_i}, z_{m_i}]^T$ perturbs the matrix of inertia additively by
 \begin{equation}
-	\Delta \bm{J} =
+	\Delta \bm{J}_{m_i} =
 	\begin{bmatrix}
-		y_{e} z_{e} m_{e}  & -x_{e} y_{e} m_{e} & -x_{e}z_{e}m_{e}   \\
-		-x_{e} y_{e} m_{e} & x_{e} z_{e} m_{e}  & -y_{e} z_{e} m_{e} \\
-		-x_{e}z_{e}m_{e}   & -y_{e} z_{e} m_{e} & x_{e} y_{e} m_{e}
+		y_{m_i} z_{m_i} m_{i}  & -x_{m_i} y_{m_i} m_i & -x_{m_i}z_{m_i}m_i   \\
+		-x_{m_i} y_{m_i} m_i & x_{m_i} z_{m_i} m_i  & -y_{m_i} z_{m_i} m_i \\
+		-x_{m_i}z_{m_i}m_i   & -y_{m_i} z_{m_i} m_i & x_{m_i} y_{m_i} m_i
 	\end{bmatrix}
 \end{equation}
-However, this perturbation in the matrix of inertia has not been incorporated into the angular velocity derivatives equations (\ref{eq:angVelDer}), for reasons of simplicity. 
+
+\begin{lstlisting}[style=C-style]
+	J_delta_i[0] = y_mi*z_mi*m_i
+	J_delta_i[1] = -x_mi*y_mi*m_i
+	J_delta_i[2] = -x_mi*z_mi*m_i
+	J_delta_i[3] = -x_mi*y_mi*m_i
+	J_delta_i[4] = x_mi*z_mi*m_i
+	J_delta_i[5] = -y_mi*z_mi*m_i
+	J_delta_i[6] = -x_mi*z_mi*m_i
+	J_delta_i[7] = -y_mi*z_mi*m_i
+	J_delta_i[8] = x_mi*y_mi*m_i
+\end{lstlisting}
+
+In case of mass perturbations, the new matrix of inertia can be calculated and used in (\ref{eq:angVelDer}).
 
 \section{Wind Disturbances}
 Another interesting model, primarily for simulation of autopilot software, is the one describing wind disturbances. It incorporates two sub-models: one for describing the constant wind velocity, as a function of altitude and one for producing wind turbulence. Static wind is intuitively expressed in the inertial frame, while turbulence is usually expressed in the body frame, so care is required in order to avoid confusion and errors in notation and coding.
@@ -369,22 +408,39 @@ Another interesting model, primarily for simulation of autopilot software, is th
 We denote with $\bm{v_{ws}}$ the constant wind vector, with components.
 
 \begin{equation}
-\bm{v_{ws}} = \bm{R}_B^T[v_{ws,n}, v_{ws,e}, v_{ws,d}]^T
+\bm{v_{ws}} = \bm{R}_b[v_{ws,n}, v_{ws,e}, v_{ws,d}]^T
 \end{equation}
 
-Usually we consider the vertical component of the wind to be zero ($v_{ws,d}=0$)
+\begin{lstlisting}[style=C-style]
+u_ws = (cos(theta)*cos(psi))*u_ws_I + (cos(theta)*sin(psi))*v_ws_I + (-sin(theta))*w_ws_I
+v_ws = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*u_ws_I + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*v_ws_I + (sin(phi)*cos(theta))*w_ws_I
+w_ws = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*u_ws_I + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*v_ws_I + (cos(phi)*cos(theta))*w_ws_I
+\end{lstlisting}
+
+Usually we consider the vertical component of the wind to be zero ($v_{ws,d}=0$), but this is not true in environments such as mountain slopes or in regions with thermal currents.
 
 Another useful expression for constant wind is:
 \begin{equation}
-\bm{v_{ws}} = \bm{R}_B^TV_{ws}[-\cos\theta_w, -\sin\theta_w, 0]^T
+\bm{v_{ws}} = \bm{R}_b^TV_{ws}[-\cos\theta_w, -\sin\theta_w, 0]^T
 \end{equation}
-where $V_{ws}$ is the wind overall magnitude (in $m/s$) and $\theta_w$ is the wind direction (0degrees for North wind)
+where $V_{ws}$ is the wind overall magnitude (in $m/s$) and $\theta_w$ is the wind direction (\SI{0}{\degree} for North wind)
+
+\begin{lstlisting}[style=C-style]
+	u_ws = (cos(theta)*cos(psi))*(-cos(theta_wind)*V_ws) + (cos(theta)*sin(psi))*(-sin(theta_wind)*V_ws)
+	v_ws = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*(-cos(theta_wind)*V_ws) + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*(-sin(theta_wind)*V_ws)
+	w_ws = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*(-cos(theta_wind)*V_ws) + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*(-sin(theta_wind)*V_ws)
+\end{lstlisting}
 
 This allows us to introduce an altitude model for the wind magnitude, commonly known as the Power Law:
 \begin{equation}
 V_{ws} = V_{ws,h_r} \left(\frac{h}{h_r}\right)^\alpha
 \end{equation}
-This formula describes the increase of the wind magnitude as an exponential function of the altitude, given a measurement of wind magnitude $V_{ws,h_0}$ at altitude $h_0$. $\alpha$ is the Hellmann exponent (roughness exponent), which describes the wind shear effect. Commonly, surface wind magnitude measurements are available for the altitude of 10m, so the above formula becomes.
+
+\begin{lstlisting}[style=C-style]
+	V_ws = V_ws_ref*pow(h/h_ref,exp_Hell)
+\end{lstlisting}
+
+This formula describes the increase of the wind magnitude as an exponential function of the altitude, given a measurement of wind magnitude $V_{ws,h_r}$ at altitude $h_r$. $\alpha$ is the Hellmann exponent (roughness exponent), which describes the wind shear effect. Commonly, surface wind magnitude measurements are available for the altitude of 10m, so the above formula becomes.
 \begin{equation} \label{eq:staticWind10}
 V_{ws} = V_{ws,h_{10}} \left(\frac{h}{h_{10}}\right)^\alpha
 \end{equation}
@@ -392,7 +448,7 @@ V_{ws} = V_{ws,h_{10}} \left(\frac{h}{h_{10}}\right)^\alpha
 Values for $\alpha$ vary with terrain morphology and wind turbulence. Some indicative values can be found in references \cite{Banuelos-Ruedas2011}, \cite{Peterson1978}, \cite{wiki:WindGrad}, \cite{wiki:Wind_profile_power_law}, but it is also claimed that the "1/7th power law" (using a value $\alpha=1/7$) is an adequate approximation for most purposes.
 It should be noted, however, that most of the reviewed studies where oriented towards wind farm applications and wind models where validated up to a few hundred meters above ground.
 
-The following table is pulled from \cite{Banuelos-Ruedas2011}
+The following table is pulled from \cite{Banuelos-Ruedas2011}.
 
 \begin{table}[H]
 \centering
@@ -409,17 +465,28 @@ The following table is pulled from \cite{Banuelos-Ruedas2011}
 \caption{Hellmann Exponent Values over Various Terrain}
 \end{table}
 
-An alternative model for wind shear can be found in \cite{Moorhouse1982}
+An alternative model for wind shear can be found in \cite{Moorhouse1982}.
 
 Wind gusts can be modeled using Dryden transfer functions, as presented in \cite{Moorhouse1982}, \cite{BEAL1993}, \cite{MathWorks:DrydenTurbulence} and \cite{Beard2012} . Time responses can be generated by feeding unit variance white noise in the following filters. Note that airspeed is a parameter for these functions, but it can be replaced with the mean or cruise airspeed of the aircraft.
 \begin{equation}
 	\bm{V_{wg}}(s) =
 	\begin{bmatrix}
 		\sigma_u \sqrt{\frac{2V_a}{\pi L_u}} \frac{1}{s + \frac{V_a}{L_u}}\\
-		\sigma_v \sqrt{\frac{3V_a}{\pi L_v}} \frac{s+\frac{V_a}{\sqrt{3}L_v}}{(s+\frac{V_a}{Lu})^2} \\
+		\sigma_v \sqrt{\frac{3V_a}{\pi L_v}} \frac{s+\frac{V_a}{\sqrt{3}L_v}}{(s+\frac{V_a}{L_u})^2} \\
 		\sigma_w \sqrt{\frac{3V_a}{\pi L_w}} \frac{s+\frac{V_a}{\sqrt{3}L_w}}{(s+\frac{V_a}{L_w})^2}
 	\end{bmatrix}
 \end{equation}
+
+During discrete implementation of the transfer functions, since first and second order functions are used, past values of the wind gusts are maintained and used.
+\begin{lstlisting}[style=C-style]
+	u_dg = w_dg_prev*(1 - V_a/L_u*dt) + sigma_u*sqrt(1*V_a/(pi*L_u))*dt*noise
+	V_dg[1] = -pow(V_a/L_u,2)*dt*V_dg_prev[0] + V_dg_[1] + sigma_u*sqrt(3*V_a/(pi*L_u))*V_a/(sqrt(3)*L_u)*dt*noise
+	V_dg[0] = (1 - 2*V_a/L_u*dt)*V_dg_prev[0] + dt*V_dg_prev[1] + sigma_u*sqrt(3*V_a/(pi*L_u))*dt*noise
+	v_dg = V_dg[0]
+	W_dg[1] = -pow(V_a/L_w,2)*dt*W_dg_prev[0] + W_dg_[1] + sigma_w*sqrt(3*V_a/(pi*L_w))*V_a/(sqrt(3)*L_w)*dt*noise
+	W_dg[0] = (1 - 2*V_a/L_w*dt)*W_dg_prev[0] + dt*W_dg_prev[1] + sigma_w*sqrt(3*V_a/(pi*L_w))*dt*noise	
+	w_dg = W_dg[0]
+\end{lstlisting}
 
 % Read BEAL1993 and verify the results
 
