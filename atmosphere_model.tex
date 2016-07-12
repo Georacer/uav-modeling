@@ -1,0 +1,64 @@
+\section{Atmosphere Model}\label{sec:atm_model}
+The primary resource for atmospheric models is \cite{USStdAtm76}. This technical report is the most accessible and adequately complete document among its "competitors". It provides models for all of the components of the atmosphere, ranging from temperature gradients to molecular synthesis of the air. It partitions the atmosphere into several layers, but we are interested only in the first one, spanning from \SI{0}{\m} to approximately \SI{11}{\kilo \m}. This range is adequate for the majority of UAV operations.
+
+\textbf{Note}: The following discussion uses the gravitational model from \cite[eq.~17]{USStdAtm76}. This model differs from the one presented in \cite{Mulaire2000} in a noticeable way. \cite{USStdAtm76} uses the \emph{Standard Gravity} for the gravitational acceleration on the surface of the Earth, established by the International Committee on Weights and Measures in 1901.
+\begin{equation} \label{eq:stdGravity}
+	g_0 = 9.80665~ m/s^2
+\end{equation}
+This number is used uniformly for all latitudes. It is known that this is a simplification. However, we can proceed to the rest of the calculations and if need arises, switch $g_0$ for the more detailed model from \cite[eq.~4-1]{Mulaire2000}.
+
+Additionally, the US Standard Atmosphere gravity model with respect to altitude uses the inverse square law for gravity decay
+\begin{equation} \label{eq:usstdatmGravAlt}
+	g(z) = g_0 \left(\frac{r_0}{r_0+z}\right)
+\end{equation}
+where
+\begin{itemize}
+	\item $z$ is the geometric altitude above the ellipsoid surface, as reported by GPS systems.
+	\item $r_0$ is the radius of the Earth at a latitude where $g_0$ takes its standard value of \SI{9.80665}{\m \per \square \s}. Considering a constant $g_0$ for all latitudes, $r_0$=\SI{6356.766}{\kilo \meter}.
+\end{itemize}
+The respective altitude model in WGS-84 is given in equation (4-3), for relatively low altitudes. Again, one can opt to use that model.
+
+Where all this matters, is in the definition of the \emph{geopotential altitude}, $h$. This is expressed in \emph{geopotential meters} ($m'$), a unit of altitude, lifting a mass by which, always requires the same amount of work, no matter at which altitude this work is performed. Essentially, this expresses how easier it gets to lift masses in the weakening gravity as altitude increases and, in turn, this affects how less densely atmosphere is packed as altitude increases.
+\begin{equation} \label{eq:geopotentialAlt}
+	h = \frac{1}{g_0}\int_{0}^{z}g\cdot dz
+\end{equation}
+Combining equations \ref{eq:stdGravity}, \ref{eq:usstdatmGravAlt} and \ref{eq:geopotentialAlt} we get the following conversion expressions between geometric and geopotential altitude
+\begin{equation}
+	h = \frac{r_0 \cdot z}{r_0 + z}
+\end{equation}
+\begin{equation}
+	z = \frac{r_0 \cdot h}{r_0 - h}
+\end{equation}
+
+Next, we need to include a temperature model as a function of altitude.
+\begin{equation}
+	T = T_0 + L_0 \cdot (h - h_0)
+\end{equation}
+where
+\begin{itemize}
+	\item $h_0$ is the initialization altitude.
+	\item $T_0$ is the temperature at our initialization altitude. Its nominal value at sea-level is \SI{288.15}{\kelvin}, but having an on-site measurement in real time is more accurate.
+	\item $L_0$ = \SI{-0.0065}{\kelvin\per\meter} is the temperature gradient.
+\end{itemize}
+The equation above describes how temperature drops as altitude increases.
+
+Finally, we can express the variation of barometric pressure as a function of geopotential altitude
+\begin{equation}
+	P = P_0\left( \frac{T_{0}}{T(h)} \right) ^ {\left( \frac{g_0 \cdot M_0}{R^* \cdot L_{0}} \right)}
+\end{equation}
+where
+\begin{itemize}
+	\item $P_0$ is the pressure at our initialization altitude. According to the US Standard Atmosphere, at sea-level its value is $P_0$ = \SI{101325}{\newton\per\square\meter} = \SI{1013.25}{\milli\bar}, but again, real time on site measurements are preferred.
+	\item $M_0$ = \SI{0.0289644}{\kilogram\per\mole}is the mean molecular weight of the air.
+	\item $R^*$ = \SI{8.31432}{\newton\meter\per\mole\per\kelvin} is the gas constant.
+\end{itemize}
+
+Most importantly, one can solve this equation for $h$ and obtain the geopotential altitude by measuring the barometric pressure.
+\begin{equation}
+	h = \frac{T_0}{L_0}	\left( \left(\frac{P}{P_0}\right)^{\frac{g_0\cdot M_0}{R^* \cdot L_0}} -1\right) + h_0
+\end{equation}
+
+Air density can be obtained from the air pressure model
+\begin{equation}
+	\rho = \frac{P \cdot M_0}{R^* \cdot T}
+\end{equation}
