@@ -1,0 +1,19 @@
+\subsection{Simplified Thruster}\label{sec:Beard_thruster}
+
+In preliminary simulation and control analyses, simplified models are often preferred. When it comes to airplane thrusters, the core behavioural characteristics that should be captured in any level of detail should be the maximum available thrust, as well as the reduction of produced thrust as the airspeed increases. In \cite{Beard2012} such a model is provided, presented below.
+
+\begin{IEEEeqnarray}{rCl}
+	F_{tx} &=& \rho k_{F1}*\left( (k_{F2} \delta_t)^2 - V_a^2 \right)\label{eq:Beard_thrust} \\
+	F_{ty} &=& 0\\
+	F_{tz} &=& 0
+\end{IEEEeqnarray}
+
+\begin{IEEEeqnarray}{rCl}
+	T_{tx} &=& -\left( k_{T} \delta_t \right)^2 \\
+	T_{ty} &=& 0\\
+	T_{tz} &=& 0
+\end{IEEEeqnarray}
+
+$\delta t$ is the motor control input. $k_{F2}$ is the pitch speed of the propeller, i.e. the airspeed at which it can no longer produce any at maximum input and has velocity units. By extension, $\rho k_{F1} k_{F2}^2$ is the maximum force the thruster can produce, which occurs at maximum input and zero airspeed.
+
+$k_{T}^2$ is the maximum counter-torque that the motor produces. The square proportionality reflects the real-life, non-linear behaviour of propellers in general.

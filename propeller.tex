@@ -1,0 +1,80 @@
+\subsection{Propeller Model}
+If the model of Section \ref{sec:Beard_thruster} is not detailed enough,a clear separation between the propeller and motor models is possible. In this section a standard propeller model is presented, commonly found in literature and in the following sections various motor models are laid out.
+
+Much like the aerodynamics of the airplane lifting surfaces, propeller thrust is dependent upon a coefficient function ($C_t$), the air density ($\rho$) and its scale (propeller diameter $D$). Additionally, it is proportional to the square of its rotational speed $n$, which is expressed in revolutions per second. If SI units need be employed then $n$ can be easily swapped for $\omega_{prop}$ in \si{\radian \per \second} (\ref{eq:omega_to_n}).
+
+\begin{IEEEeqnarray}{rCl}
+	F_{tx} &= & C_t \rho n^2 D^4 \\
+	n_{prop} &= & \frac{\omega_{prop}}{2 \pi}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	F_t_x = C_t*rho*n*n*D*D*D*D
+	n_prop = w_prop/2/pi \label{eq:omega_to_n}
+\end{lstlisting}
+
+This time, the coefficient of thrust function has only one variable, the \emph{advance ratio} ($J$). This quantity is the ratio of the aircraft airspeed to the speed the propeller "screws" itself into the air volume. It is a means to quantify how efficiently the propeller forces itself into the air, in other words, its operational state. $C_T$ generally doesn't have a simple shape. It is usually given by propeller manufacturers as a data set, which peaks at the nominal advance ratio and falls off at either side of the advance ratio range. This function can adequately model propeller stall, as well as the windmilling effect.
+
+\begin{IEEEeqnarray}{rCl}
+	J &= & \frac{V_a}{nD} \\
+	C_t &=  & C_t(J) \label{eq:propCT}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	Jar = V_a/n/D
+\end{lstlisting}
+
+$C_t$ can be described as a polynomial of $J$, with a degree ranging from 3-6. A spline representation is also possible. Typical shapes of the $C_t$ curve can be seen in Figure \ref{fig:C_T}, for propellers with increasing pitch, ranging from \SI{0}{\degree} to \SI{40}{\degree}. Image taken from \cite{Allerton2009}.
+
+\begin{figure}
+	\centering
+	\begin{overpic}[height=0.5\textheight, angle=0,tics=10]%
+		{figures/C_T_from_Jar.png}
+		\put(15,40){ $\beta$=\SI{0}{\degree}}		
+		\put(60,90){ $\beta$=\SI{40}{\degree}}
+	\end{overpic}
+	\caption[Coefficient of Thrust as a function of Advance Ratio]{Coefficient of Thrust as a function of Advance Ratio}
+	\label{fig:C_T}
+\end{figure}
+
+In a similar fashion, there is an expression for the power that is consumed by the propeller in order to produce thrust and it uses a coefficient of power ($C_p$). Again, typical shapes for the curve $C_p$ can be seen in Figure \ref{fig:C_P}. Image taken from \cite{Allerton2009}.
+
+\begin{IEEEeqnarray}{rCl}
+	P_{prop} &= & C_p \rho n^3 D^5\\
+	C_p & = & C_p(J)\label{eq:propCP}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	P_{prop} = C_p*rho*n*n*n*D*D*D*D*D
+\end{lstlisting}
+
+\begin{figure}
+	\centering
+	\begin{overpic}[height=0.5\textheight, angle=0,tics=10]%
+		{figures/C_P_from_Jar.png}
+		\put(60,10){ $\beta$=\SI{0}{\degree}}		
+		\put(60,70){ $\beta$=\SI{40}{\degree}}
+	\end{overpic}
+	\caption[Coefficient of Power as a function of Advance Ratio]{Coefficient of Powerust as a function of Advance Ratio}
+	\label{fig:C_P}
+\end{figure}
+
+A detail included in this model, not mentioned in most resources, is the equation which describes how the rotational speed of the propeller changes transiently in time. This is a differential equation of the rotational speed as a function of the difference between the available power from the motor ($P_{mot}$) and the power consumed by the propeller. A necessary parameter is the sum of the moments of inertia along the x-axis of the engine and the propeller, denoted as $J_{prop}$ and $J_{mot}$.
+
+\begin{IEEEeqnarray}{rCl}
+	\dot{n}_{prop} &= & \frac{1}{J_{prop} + J_{mot}} \frac{P_{mot} - P_{prop}}{n_{prop}}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	dot_n_prop = 1/(J_prop + J_mot)*(P_mot - P_prop)
+\end{lstlisting}
+
+Finally, the expression of propeller moment is simply derived from the ratio of the propeller power over the propeller rotational speed.
+
+\begin{IEEEeqnarray}{rCl}
+	T_{tx} &= & \frac{P_{prop}}{\omega_{prop}}
+\end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	T_t_x = P_prop / w_prop
+\end{lstlisting}

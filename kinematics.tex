@@ -1,6 +1,6 @@
 \chapter{Kinematic Equations}
 
-Considering the UAV as a rigid body, the standard kinematic equations will be used. Due to the scope of this analysis, the \textbf{Flat-Earth model} equations will be used, instead of a round Earth (eg WGS-84 model). This option was made since the intended UAV area of operations will be constrained over a small area. GPS coordinates will be used as in a Cartesian grid.
+Considering the UAV as a rigid body, the standard kinematic equations can be used. Due to the scope of this analysis, the \textbf{Flat-Earth model} equations will be used, instead of a round Earth (eg WGS-84 model). This option was made since the intended UAV area of operations will be constrained over a small area. GPS coordinates will be used as in a Cartesian grid.
 
 \section{Position}
 
@@ -8,7 +8,7 @@ We express the position vector as
 \begin{equation} \label{eq:navshort}
 	\bm{p} = [n\ e\ d]^T
 \end{equation}
-The variables $n$, $e$ and $d$ correspond to the North, East and Down direction, which constitute the primary axis of the NED (as it is called) coordinate system. We shall denote this frame as $\mathcal{F}_F$. The origin of the NED frame is arbitrarily located at the home of operations (or launch point) of every mission and placed on the surface of the Eearth.
+The variables $n$, $e$ and $d$ correspond to the North, East and Down direction, which constitute the primary axis of the NED (as it is called) coordinate system. We shall denote this frame as $\mathcal{F}_F$. The origin of the NED frame is arbitrarily located at the home of operations (or launch point) of every mission and placed on the surface of the Earth.
 In contrast, the origin of the so-called body-axes $\mathcal{F}_B$ is the center of gravity point of the aircraft. Its x-axis is placed on the line of longitudinal symmetry, its y-axis starboard and the z-axis downwards, producing a right-handed frame, which can be seen in the following figure.
 
 \begin{figure}[H]
@@ -130,7 +130,7 @@ and its time derivative is
 	\dot{\bm{\omega}} = \frac{1}{\bm{J}}\left(\bm{T_b} - \bm{\omega} \times (\bm{J} \bm{\omega})\right)
 \end{equation}
 
-This equation incorporates the inertia matrix $\bm{J}$ and the input torque, expressed in the body axes $T_b$.
+This equation incorporates the inertia matrix $\bm{J}$ and the input torque, expressed in the body axes $\bm{T_b}$.
 
 The inertia matrix is defined as
 \begin{equation}
@@ -142,7 +142,7 @@ The inertia matrix is defined as
 	\end{bmatrix}
 \end{equation}
 Commonly, the inertia matrix in fixed-wing aircraft is considered to have zero elements in the x-y and y-z direction, since they are symmetric about the x-z plane.
-Still, in this section, the full, non-symmetric matrix of inertial will be used, as this is the most general case.
+Still, in this section, the full, non-symmetric matrix of inertia will be used, as this is the most general case.
 \begin{equation}\label{eq:inertiaMat}
 	\bm{J} = 
 	\begin{bmatrix}
@@ -250,7 +250,7 @@ Thus, \ref{eq:angVelDer} becomes
 	\end{bmatrix}
 	\left(
 	\begin{bmatrix}
-		l \\ m \\ n
+		T_x \\ T_y \\ T_z
 	\end{bmatrix} - 
 	\begin{bmatrix}
 		c_{1} \\
@@ -259,18 +259,17 @@ Thus, \ref{eq:angVelDer} becomes
 	\end{bmatrix}
 	\right) \Leftrightarrow \\
 	&=&  \begin{bmatrix}
-		j^i_{11} \left(l - c_{1}\right) + j^i_{12} \left(m - c_{2}\right) + j^i_{13} \left(n - c_{3}\right)\\
-		j^i_{21} \left(l - c_{1}\right) + j^i_{22} \left(m - c_{2}\right) + j^i_{23} \left(n - c_{3}\right)\\
-		j^i_{31} \left(l - c_{1}\right) + j^i_{32} \left(m - c_{2}\right) + j^i_{33} \left(n - c_{3}\right)
+		j^i_{11} \left(T_x - c_{1}\right) + j^i_{12} \left(T_y- c_{2}\right) + j^i_{13} \left(T_z - c_{3}\right)\\
+		j^i_{21} \left(T_x - c_{1}\right) + j^i_{22} \left(T_y - c_{2}\right) + j^i_{23} \left(T_z - c_{3}\right)\\
+		j^i_{31} \left(T_x - c_{1}\right) + j^i_{32} \left(T_y - c_{2}\right) + j^i_{33} \left(T_z - c_{3}\right)
 	\end{bmatrix}	
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	dot_p = Ji[0]*(l-C[0]) + Ji[1]*(m - C[1]) + Ji[2]*(n - C[2])
-	dot_q = Ji[3]*(l-C[0]) + Ji[4]*(m - C[1]) + Ji[5]*(n - C[2])
-	dot_r = Ji[6]*(l-C[0]) + Ji[7]*(m - C[1]) + Ji[8]*(n - C[2])
+	dot_p = Ji[0]*(T_x-C[0]) + Ji[1]*(T_y - C[1]) + Ji[2]*(T_z - C[2])
+	dot_q = Ji[3]*(T_x-C[0]) + Ji[4]*(T_y - C[1]) + Ji[5]*(T_z - C[2])
+	dot_r = Ji[6]*(T_x-C[0]) + Ji[7]*(T_y - C[1]) + Ji[8]*(T_z - C[2])
 \end{lstlisting}
-
 
 
 
@@ -294,9 +293,9 @@ which is equivalent to
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	dot_u = r*v - q*w + Fx/m
-	dot_v = -r*u + p*w + Fy/m
-	dot_w = q*u - p*v + Fz/m
+	dot_u = r*v - q*w + F_x/m
+	dot_v = -r*u + p*w + F_y/m
+	dot_w = q*u - p*v + F_z/m
 \end{lstlisting}
 
 We need to define the wind velocity, in the body frame. This is the velocity of the air-mass, moving above the ground, expressed in the body axes.
@@ -306,7 +305,7 @@ We need to define the wind velocity, in the body frame. This is the velocity of 
 
 The resulting relative (air)speed of the aircraft is
 \begin{equation}
-	\bm{v_r} = \bm{v}_B - \bm{v}_w
+	\bm{v_r} = \bm{v}_b - \bm{v}_w
 \end{equation}
 
 \begin{lstlisting}[style=C-style]
@@ -398,14 +397,18 @@ Naturally, mass additions also affect the matrix of inertia of the aircraft. A m
 
 In case of mass perturbations, the new matrix of inertia can be calculated and used in (\ref{eq:angVelDer}).
 
-\section{Wind Disturbances}
-Another interesting model, primarily for simulation of autopilot software, is the one describing wind disturbances. It incorporates two sub-models: one for describing the constant wind velocity, as a function of altitude and one for producing wind turbulence. Static wind is intuitively expressed in the inertial frame, while turbulence is usually expressed in the body frame, so care is required in order to avoid confusion and errors in notation and coding.
+\section{Wind}\label{sec:wind}
+The effect of wind is often omitted in works containing simple models of UAVs, but its contribution is deciding when models are required to compare with reality, especially when it comes to fixed-wing airframes. The behaviour and performance of the aircraft is greatly affected by the movement of the air mass that it flies in and thus this movement should be taken into account.
+
+The contribution of wind is usually modeled as an external velocity, rather than a force. This velocity is superimposed to the inertial velocity of the aircraft to extract the overall relative airspeed, which is used in aerodynamics calculations.
+
+Two velocity components are considered: one for describing the constant wind velocity and one for producing wind turbulence. Static wind is intuitively expressed in the inertial frame, while turbulence is usually expressed in the body frame, so care is required in order to avoid confusion and errors in notation and coding.
 
 \begin{equation}
 	\bm{v_w} = \bm{v_{ws}} + \bm{v_{wg}}
 \end{equation}
 
-We denote with $\bm{v_{ws}}$ the constant wind vector, with components.
+We denote with $\bm{v_{ws}}$ the constant wind vector in the body frame, with components.
 
 \begin{equation}
 \bm{v_{ws}} = \bm{R}_b[v_{ws,n}, v_{ws,e}, v_{ws,d}]^T
@@ -417,89 +420,4 @@ v_ws = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*u_ws_I + (sin(phi)*sin(t
 w_ws = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*u_ws_I + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*v_ws_I + (cos(phi)*cos(theta))*w_ws_I
 \end{lstlisting}
 
-Usually we consider the vertical component of the wind to be zero ($v_{ws,d}=0$), but this is not true in environments such as mountain slopes or in regions with thermal currents.
-
-Another useful expression for constant wind is:
-\begin{equation}
-\bm{v_{ws}} = \bm{R}_b^TV_{ws}[-\cos\theta_w, -\sin\theta_w, 0]^T
-\end{equation}
-where $V_{ws}$ is the wind overall magnitude (in $m/s$) and $\theta_w$ is the wind direction (\SI{0}{\degree} for North wind)
-
-\begin{lstlisting}[style=C-style]
-	u_ws = (cos(theta)*cos(psi))*(-cos(theta_wind)*V_ws) + (cos(theta)*sin(psi))*(-sin(theta_wind)*V_ws)
-	v_ws = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*(-cos(theta_wind)*V_ws) + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*(-sin(theta_wind)*V_ws)
-	w_ws = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*(-cos(theta_wind)*V_ws) + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*(-sin(theta_wind)*V_ws)
-\end{lstlisting}
-
-This allows us to introduce an altitude model for the wind magnitude, commonly known as the Power Law:
-\begin{equation}
-V_{ws} = V_{ws,h_r} \left(\frac{h}{h_r}\right)^\alpha
-\end{equation}
-
-\begin{lstlisting}[style=C-style]
-	V_ws = V_ws_ref*pow(h/h_ref,exp_Hell)
-\end{lstlisting}
-
-This formula describes the increase of the wind magnitude as an exponential function of the altitude, given a measurement of wind magnitude $V_{ws,h_r}$ at altitude $h_r$. $\alpha$ is the Hellmann exponent (roughness exponent), which describes the wind shear effect. Commonly, surface wind magnitude measurements are available for the altitude of 10m, so the above formula becomes.
-\begin{equation} \label{eq:staticWind10}
-V_{ws} = V_{ws,h_{10}} \left(\frac{h}{h_{10}}\right)^\alpha
-\end{equation}
-
-Values for $\alpha$ vary with terrain morphology and wind turbulence. Some indicative values can be found in references \cite{Banuelos-Ruedas2011}, \cite{Peterson1978}, \cite{wiki:WindGrad}, \cite{wiki:Wind_profile_power_law}, but it is also claimed that the "1/7th power law" (using a value $\alpha=1/7$) is an adequate approximation for most purposes.
-It should be noted, however, that most of the reviewed studies where oriented towards wind farm applications and wind models where validated up to a few hundred meters above ground.
-
-The following table is pulled from \cite{Banuelos-Ruedas2011}.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|c|c|}
-	\hline
-	           Landscape type             & Friction coefficient $\alpha$ \\ \hline
-	 Lakes, ocean and smooth hard ground  &              0.1              \\ \hline
-	      Grasslands (ground level)       &             0.15              \\ \hline
-	    Tall crops, hedges and shrubs     &             0.20              \\ \hline
-	        Heavily forested land         &             0.25              \\ \hline
-	Small town with some trees and shrubs &              0.3              \\ \hline
-	 City areas with high rise buildings  &              0.4              \\ \hline
-\end{tabular} 
-\caption{Hellmann Exponent Values over Various Terrain}
-\end{table}
-
-An alternative model for wind shear can be found in \cite{Moorhouse1982}.
-
-Wind gusts can be modeled using Dryden transfer functions, as presented in \cite{Moorhouse1982}, \cite{BEAL1993}, \cite{MathWorks:DrydenTurbulence} and \cite{Beard2012} . Time responses can be generated by feeding unit variance white noise in the following filters. Note that airspeed is a parameter for these functions, but it can be replaced with the mean or cruise airspeed of the aircraft.
-\begin{equation}
-	\bm{V_{wg}}(s) =
-	\begin{bmatrix}
-		\sigma_u \sqrt{\frac{2V_a}{\pi L_u}} \frac{1}{s + \frac{V_a}{L_u}}\\
-		\sigma_v \sqrt{\frac{3V_a}{\pi L_v}} \frac{s+\frac{V_a}{\sqrt{3}L_v}}{(s+\frac{V_a}{L_u})^2} \\
-		\sigma_w \sqrt{\frac{3V_a}{\pi L_w}} \frac{s+\frac{V_a}{\sqrt{3}L_w}}{(s+\frac{V_a}{L_w})^2}
-	\end{bmatrix}
-\end{equation}
-
-During discrete implementation of the transfer functions, since first and second order functions are used, past values of the wind gusts are maintained and used.
-\begin{lstlisting}[style=C-style]
-	u_dg = w_dg_prev*(1 - V_a/L_u*dt) + sigma_u*sqrt(1*V_a/(pi*L_u))*dt*noise
-	V_dg[1] = -pow(V_a/L_u,2)*dt*V_dg_prev[0] + V_dg_[1] + sigma_u*sqrt(3*V_a/(pi*L_u))*V_a/(sqrt(3)*L_u)*dt*noise
-	V_dg[0] = (1 - 2*V_a/L_u*dt)*V_dg_prev[0] + dt*V_dg_prev[1] + sigma_u*sqrt(3*V_a/(pi*L_u))*dt*noise
-	v_dg = V_dg[0]
-	W_dg[1] = -pow(V_a/L_w,2)*dt*W_dg_prev[0] + W_dg_[1] + sigma_w*sqrt(3*V_a/(pi*L_w))*V_a/(sqrt(3)*L_w)*dt*noise
-	W_dg[0] = (1 - 2*V_a/L_w*dt)*W_dg_prev[0] + dt*W_dg_prev[1] + sigma_w*sqrt(3*V_a/(pi*L_w))*dt*noise	
-	w_dg = W_dg[0]
-\end{lstlisting}
-
-% Read BEAL1993 and verify the results
-
-Typical values for the transfer function parameters for a small UAV can be found in \cite{Langelaan2011} and are copied below.
-\begin{table}[H]
-\centering
-\begin{tabular}{|p{5cm}|c|c|c|c|c|}
-	\hline
-	            Description              & altitude (m) & $L_u$ (m) & $L_w$  (m) & $\sigma _u$ (m/s) & $\sigma _w$ (m/s) \\ \hline
-	   low altitude, light turbulence    &      50      &    200    &     50     &       1.06       &       0.7        \\ \hline
-	 low altitude, moderate turbulence   &      50      &    200    &     50     &       2.12       &       1.4        \\ \hline
-	 medium altitude, light turbulence   &     600      &    533    &    533     &       1.5        &       1.5        \\ \hline
-	medium altitude, moderate turbulence &     600      &    533    &    533     &       3.0        &       3.0        \\ \hline
-\end{tabular} 
-\caption{Gust Field Properties}
-\end{table}
+Models for both static wind (in the inertial frame) $\bm{v_{ws}}$ and wind gusts $\bm{v_{wg}}$ can be found in Section \ref{sec:wind_model}.
