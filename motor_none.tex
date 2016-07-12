@@ -8,11 +8,23 @@ In preliminary simulation and control analyses, simplified models are often pref
 	F_{tz} &=& 0
 \end{IEEEeqnarray}
 
+\begin{lstlisting}[style=C-style]
+	F_t_x = rho*k_F1*(k_F2*k_F2*deltat*deltat - V_a*V_a)
+	F_t_y = 0
+	F_t_z = 0
+\end{lstlisting}
+
 \begin{IEEEeqnarray}{rCl}
 	T_{tx} &=& -\left( k_{T} \delta_t \right)^2 \\
 	T_{ty} &=& 0\\
 	T_{tz} &=& 0
 \end{IEEEeqnarray}
+
+\begin{lstlisting}[style=C-style]
+	T_t_x = -k_T*k_T*deltat*deltat
+	T_t_y = 0
+	T_t_z = 0
+\end{lstlisting}
 
 $\delta t$ is the motor control input. $k_{F2}$ is the pitch speed of the propeller, i.e. the airspeed at which it can no longer produce any at maximum input and has velocity units. By extension, $\rho k_{F1} k_{F2}^2$ is the maximum force the thruster can produce, which occurs at maximum input and zero airspeed.
 

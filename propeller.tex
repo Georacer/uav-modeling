@@ -5,12 +5,12 @@ Much like the aerodynamics of the airplane lifting surfaces, propeller thrust is
 
 \begin{IEEEeqnarray}{rCl}
 	F_{tx} &= & C_t \rho n^2 D^4 \\
-	n_{prop} &= & \frac{\omega_{prop}}{2 \pi}
+	n_{prop} &= & \frac{\omega_{prop}}{2 \pi} \label{eq:omega_to_n}
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
 	F_t_x = C_t*rho*n*n*D*D*D*D
-	n_prop = w_prop/2/pi \label{eq:omega_to_n}
+	n_prop = w_prop/2/pi 
 \end{lstlisting}
 
 This time, the coefficient of thrust function has only one variable, the \emph{advance ratio} ($J$). This quantity is the ratio of the aircraft airspeed to the speed the propeller "screws" itself into the air volume. It is a means to quantify how efficiently the propeller forces itself into the air, in other words, its operational state. $C_T$ generally doesn't have a simple shape. It is usually given by propeller manufacturers as a data set, which peaks at the nominal advance ratio and falls off at either side of the advance ratio range. This function can adequately model propeller stall, as well as the windmilling effect.
