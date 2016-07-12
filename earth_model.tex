@@ -1,0 +1,78 @@
+\section{Earth Model}\label{sec:earth_model}
+
+This section draws from \cite{Mulaire2000}, specifically chapter 3 and equations of p.~7.5, regarding the shape of the Earth.
+According to the WGS-84, the Earth is modeled as an ellipsoid which is flatter on the poles and symmetric on the z-axis (the Earth's rotation axis). The semi-major axis is
+\begin{equation}\label{eq:majorAxis}
+	a=\SI{6378137}{\m}
+\end{equation}
+and the flattening, defined as
+\begin{equation}
+	f = \frac{a-b}{a}
+\end{equation}
+is equal to
+\begin{equation}
+	\frac{1}{f} = 298.257222101
+\end{equation}
+$b$ is the semi-minor axis of the ellipsoid and is calculated from the above equations and is equal to
+\begin{equation}
+	b=\SI{6356752.3142}{\m}
+\end{equation}
+The first eccentricity, $e$, is defined as
+\begin{equation}
+	e^2=2f-f^2
+\end{equation}
+
+With these constants available, for any given point on the surface of the Earth with latitude $\phi$, we can calculate the radius of curvature in the prime vertical
+\begin{equation}
+	R_N=\frac{a}{\sqrt{1-e^2\sin^2\phi}}
+\end{equation}
+and the curvature in the meridian
+\begin{equation}
+	R_M = \frac{a(1-e^2)}{(1-e^2\sin^2\phi)^{3/2}}
+\end{equation}
+
+Finally, a small change of latitude $\Delta \phi$ causes a shift in the north-south direction
+\begin{equation}
+	\Delta n = R_M \sin \Delta \phi
+\end{equation}
+and a small change of longitude $\Delta \lambda$ causes a shift in the east-west direction
+\begin{equation}
+	\Delta e = R_N \sin \Delta \lambda
+\end{equation}
+
+For such small angles (in the order of hundredths of a degree), the simplification $\sin \Delta \phi = \Delta \phi$ (in radians) might be acceptable.
+
+For reference, at a latitude of \SI{45}{\degree}, a change of \SI{0.01}{\degree} to the North corresponds to a distance of \SI{1111.318}{\m} and the same change Eastwards corresponds to \SI{1115.062}{\m}.
+
+\textbf{Sidenote:} As of writing, the Google Earth 7.1.2 application for Linux reports a distance of about 1113m between the coordinates (45.00,00.00) and (45.01,00.00) and (curiously) a distance of about 788m(!) between the coordinates (45.00,00.00) and (45.00,00.01). Until further investigation, this results seems to be erroneous.
+
+In case simpler calculations are required, one could use the geometric mean of the semi-major and semi-minor axis
+\begin{equation}
+	\bar{R} = \sqrt{a*b}
+\end{equation}
+and multiply it by the change in angle, regardless of direction.
+\begin{equation}
+	\Delta n = \bar{R} \Delta \phi
+\end{equation}
+For the previous example, the above equation yields 1111.327m, which is very acceptable for many applications.
+
+\todo[inline]{Add a set of equations for the reverse procedure, from $\Delta x$ to $\Delta \phi$.}
+
+Regarding altitude, we consider that the vertical distance from the surface of the ellipsoid $h$ is available. Since the local NED frame is placed at the starting altitude, this altitude ($h_0$) should be used to initialize the frames. One could take altitude into account when calculating Cartesian displacements in the NED frame. This is as simple as adding altitude to the local Earth radius. This is demonstrated below.
+
+Summing up, we do the following steps to convert from geodetic coordinates to local coordinates:
+\begin{enumerate}
+	\item Note the starting coordinates $\phi_0$, $\lambda_0$ and altitude $h_0$
+	\item Calculate the radii of curvature $R_N(\phi_0)$ and $R_M(\phi_0)$
+\end{enumerate}
+For each GPS reading $(\phi, \lambda, h)$
+\begin{enumerate}
+	\item Calculate the differences $\Delta \phi = \phi - \phi_0$, $\Delta \lambda = \lambda - \lambda_0$ and $\Delta h = h - h_0$
+	\item Calculate $n = (R_M + h) \sin \Delta \phi$
+	\item Calculate $e = (R_N + h) \sin \Delta \lambda$
+	\item Calculate $d = -\Delta h$
+\end{enumerate}
+
+In a different approach, we can treat the state of the GPS coordinates ($\phi$, $\lambda$, $h$) as a dynamic system, which is driven by $\dot{n}$, $\dot{e}$ and $\dot{d}$. Although more complicated, this procedure is suitable in cases where the trajectory of the aircraft is expected to arc around the Earth. In these cases the Flat Earth assumption breaks rendering the previous calculations invalid.
+
+\todo[inline]{Write the coordinate evolution system.}
