@@ -15,27 +15,68 @@ In the ideal case where the accelerometer is installed at the center of gravity 
 	\bm{a}_{b,m} &= &\bm{a}_b - \bm{R}_b\bm{g}\\
 	 &=  & \frac{\bm{F}_b}{m} - \bm{R}_b \bm{g} \IEEEyessubnumber
 \end{IEEEeqnarray}
+%
+or in scalar form
+%
+\begin{IEEEeqnarray}{rCl}
+	\dot{u}_m &=& \frac{F_x}{m} - (-\sin \theta ~m g) \IEEEyesnumber \IEEEyessubnumber\\
+	\dot{v}_m &=& \frac{F_y}{m} -  \sin \phi \cos \theta ~m g  \IEEEyessubnumber\\
+	\dot{w}_m &=& \frac{F_z}{m} -  \cos \phi \cos \theta ~m g \IEEEyessubnumber
+\end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	dot_u_m = F_x/m + sin(theta)*m*g
+	dot_v_m = F_y/m - sin(phi)*cos(theta)*m*g
+	dot_w_m = F_z/m - cos(phi)*cos(theta)*m*g
+\end{lstlisting}
 
-However, this is an ideal case. Most of the times, the sensor is placed in a point with coordinates $\bm{r}_{acc}$ relative to the center of gravity. The resulting measurement, affected by the aircraft rotational velocity will be
-
+However, this is an ideal case. Most of the times, the sensor is placed in a point with coordinates $\bm{p}_{acc}$ relative to the center of gravity. The resulting measurement, affected by the aircraft rotational velocity will be \cite[p.~26]{Stevens2003}\cite[p.~179]{Laban1994}
+%
 \begin{equation}
 	\bm{a}_{b,m} =  \frac{\bm{F_b}}{m} -  \bm{R}_b\bm{g} + \dot{\bm{\omega}}_b \times \bm{r}_{acc} + \bm{\omega}_b \times (\bm{\omega}_b \times \bm{r}_{acc}) \IEEEyessubnumber \\
 \end{equation}
 which can be expanded into
 \begin{IEEEeqnarray}{rCl}
-	a_{m,x} &= & \frac{F_x}{m}+g\sin\theta -\dot{r}r_{acc,y}+\dot{q}r_{acc,z}+(-r^2-q^2)r_{acc,x}+pqr_{acc,y}+prr_{acc,z} \IEEEyessubnumber\\
-	a_{m,y} &= & \frac{F_y}{m}-\sin\phi\cos\theta +\dot{r}r_{acc,x}-\dot{p}r_{acc,z}+pqr_{acc,x} + (-p^2-r^2)r_{acc,y} +qrr_{acc,z}\IEEEyessubnumber\\
-	a_{m,z} &= & \frac{F_z}{m}-\cos\phi\cos\theta -\dot{q}r_{acc,x}+\dot{p}r_{acc,y}+prr_{acc,x}  +qrr_{acc,y} + (-p^2-q^2)r_{acc,z}\IEEEyessubnumber
+	a_{m,x} &= & \frac{F_x}{m}+g\sin\theta -\dot{r}p_{acc,y}+\dot{q}p_{acc,z} \nonumber \\
+	&&+(-r^2-q^2)p_{acc,x}+pqp_{acc,y}+prp_{acc,z} \IEEEyessubnumber\\
+	a_{m,y} &= & \frac{F_y}{m}-\sin\phi\cos\theta +\dot{r}p_{acc,x}-\dot{p}p_{acc,z}+pqp_{acc,x} \nonumber \\
+	&& +pqp_{acc,x} + (-p^2-r^2)p_{acc,y} +qrp_{acc,z}\IEEEyessubnumber\\
+	a_{m,z} &= & \frac{F_z}{m}-\cos\phi\cos\theta -\dot{q}p_{acc,x}+\dot{p}p_{acc,y} \nonumber \\
+	&&+prp_{acc,x}  +qrp_{acc,y} + (-p^2-q^2)p_{acc,z}\IEEEyessubnumber
 \end{IEEEeqnarray}
-The angular velocity derivatives can be further substituted using eq~\ref{eq:angVelDer}.
+\begin{equation*}
+	\Leftrightarrow
+\end{equation*}
+\begin{IEEEeqnarray}{rCl}
+	a_{m,x} &= & \frac{F_x}{m}+g\sin\theta + (-r^2-q^2)p_{acc,x}+(pq -\dot{r})p_{acc,y}+(pr + \dot{q})p_{acc,z} \IEEEyessubnumber\\
+	a_{m,y} &= & \frac{F_y}{m}-\sin\phi\cos\theta +(pq+\dot{r})p_{acc,x} + (-p^2-r^2)p_{acc,y} +(qr-\dot{p})p_{acc,z}\IEEEyessubnumber\\
+	a_{m,z} &= & \frac{F_z}{m}-\cos\phi\cos\theta + (pr-\dot{q})p_{acc,x} + (qr+\dot{p})p_{acc,y} + (-p^2-q^2)p_{acc,z}\IEEEyessubnumber
+\end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	dot_u_m = F_x/m + sin(theta)*m*g + (-r*r-q*q)*p_acc_x + (p*q-dot_r)*p_acc_y + (p*r+dot_q)*p_acc_y
+	dot_v_m = F_y/m - sin(phi)*cos(theta)*m*g + (p*q+dot_r)*p_acc)x + (-p*p-r*r)*p_acc_y + (q*r+dot_p)*p_acc_z
+	dot_w_m = F_z/m - cos(phi)*cos(theta)*m*g + (p*r+dot_q)*p_acc_x + (q*r+dot_p)*p_acc)y + (-p*p-q*q)*p_acc_z
+\end{lstlisting}
+%
+One could opt to further substitute $\dot{\omega}$ from eq~\ref{eq:angVelDer}. In the case of simulation, this is completely legitimate. On the other hand, if the equations are used to compensate for real-world measurements, taking the differentiated gyroscope signal is much more feasible.
+%
 \subsection{Gyroscope}
-Gyroscopes are sensors capable of measuring the rotational velocities of the rigid body they are attached onto. This measurement is unaffected by the location of placement.
+Gyroscopes are sensors capable of measuring the rotational velocities of the rigid body they are attached onto. This measurement is unaffected by the location of placement. Generally, there are no systematic faults regarding gyroscopes, but measurements errors due to sensor manufacturing deficiencies and temperature effects are common. Still this kind of errors are not to be examined in this chapter.
 \begin{equation}
 	\bm{\omega_m} = \bm{\omega_b}
 \end{equation}
+%
+\begin{lstlisting}
+	p_m = p
+	q_m = q
+	r_m = r
+\end{lstlisting}
 
 \subsection{Magnetometer}
-Magnetometers are sensors which measure the magnetic field of the Earth. At any given point on the surface of the Earth the vector field components are known and thus this sensor can be used to extract orientation information. The intensity of the magnetic field (measured usually in nanoTesla) is mostly constant, at about 45~000~nT. However, the direction of the magnetic flux lines changes radically from location to location \cite{wiki:declination}, \cite{wiki:inclination}, \cite{NOAAGeom}. If we express the magnetic field intensity as a vector quantity with North, East and Down components, for a given pair of coordinates
+Magnetometers are sensors which measure magnetic fields. They are commonly used to measure the magnetic field of the Earth and for that reason they are often called 3D digital compasses.
+
+At any given point on the surface of the Earth the vector field components are known and thus this sensor can be used to extract orientation information. The intensity of the magnetic field (measured usually in nanoTesla) is mostly constant, at about 45~000~nT. However, the direction of the magnetic flux lines changes radically from location to location \cite{wiki:declination}, \cite{wiki:inclination}, \cite{NOAAGeom}. If we express the magnetic field intensity as a vector quantity with North, East and Down components, for a given pair of coordinates
 \begin{equation}
 \bm{h} = [h_N, h_E, h_D]^T
 \end{equation}
@@ -55,22 +96,42 @@ The measurement of the onboard magnetometer will then be
 			\lvert \bm{h} \rvert \\ 0 \\ 0
 	\end{bmatrix}
 \end{equation}
+%
+\begin{lstlisting}
+	h_m_x = h_x_b
+	h_m_y = h_y_b
+	h_m_z = h_z_b	
+\end{lstlisting}
+
+Magnetometers used as part of an AHRS system are supposed to measure only the magnetic field of the Earth. However, typically in the volume of a UAV, additional magnetic fields caused by current conductors and electric motors are manifested. These act as disturbances to magnetometers. They are usually hard to compensate, so isolation and distance are the best ways to protect a magnetometer from these error sources.
 
 \subsection{AHRS}
 There also are hardware solutions which incorporate all three aforementioned sensors and extract an estimation of the Euler angles set.
 \begin{equation}
 	\bm{\Phi_{m}} = \bm{\Phi}
 \end{equation}
+%
+\begin{lstlisting}
+	phi_m = phi
+	theta_m = theta
+	psi_m = psi
+\end{lstlisting}
 
 \section{GPS Measurements}
 In order to have a reading of the absolute position of the aircraft in the inertial frame, be it the local NED frame or the global frame, defined by latitude and longitude, a GPS sensor is required. This is the only reasonable option, as radio-location is not a viable option for low-cost and low-weight robotic platforms. Whether the system will use a simple GPS receiver, a multi-constellation receiver, differential measurements or even RTK packages improves only the measurement accuracy.
 
-Common quantities reported by a GPS receiver are the longitude, latitude and altitude set. However, these do not correspond to the NED frame. In order to translate them to the north, east and down quantities we need to obtain the data on the curvature of the Earth at the location of interest. The following discussion should be adequate for the needs of a NED frame spanning a few kilometers to each direction of the starting coordinates.
+Common quantities reported by a GPS receiver are the longitude, latitude and altitude set. However, these do not correspond to the NED frame. In order to translate them to the north, east and down quantities we need to obtain the data on the curvature of the Earth at the location of interest. The following assumption should be adequate for the needs of a NED frame spanning a few kilometers to each direction of the starting coordinates.
 
 Having done the above necessary conversions, we can treat the GPS receiver as a sensor which reports displacement in the local NED frame
 \begin{equation}
 \bm{p_{gps}} = \bm{p}
 \end{equation}
+%
+\begin{lstlisting}
+	north_gps = north
+	east_gps = east
+	down_gps = down
+\end{lstlisting}
 
 Additionally, most GPS receivers report ground velocities
 \begin{equation}
@@ -80,20 +141,34 @@ and the direction of travel, also referred to as the \emph{course angle}
 \begin{equation}
 \chi_{gps} = \operatorname{atan2}\left({\dot{e}},{\dot{n}}\right)
 \end{equation}
+%
+\begin{lstlisting}
+	V_g_gps = sqrt(dot_nort*dot_north + dot_east*dot_east)
+	chi_gps = atan2(dot_east,dot_north)
+\end{lstlisting}
 
 \section{Atmospheric Measurements}
 
 \subsection{Pressure}
-Having defined the atmospheric model, we can now introduce a barometer sensor, which measures the barometric pressure at the UAV altitude.
+Having defined the atmospheric model in Section \ref{sec:atm_model}, we can now introduce a barometer sensor, which measures the barometric pressure at the UAV altitude.
 \begin{equation}
 	P_{bar} = P
 \end{equation}
+%
+\begin{lstlisting}
+	P_bar = P
+\end{lstlisting}
 
 \subsection{Temperature}
 Also, thermometers are available, which record the atmospheric temperature and are necessary for the extraction of altitude, through pressure readings. Care is needed however, as electronics are known to warm-up and raise the temperature in the enclosed spaces they are placed. However, this discussion belongs to an fault analysis and will not be expanded upon here.
 \begin{equation}
 	T_m =  T 
 \end{equation}
+%
+\begin{lstlisting}
+	T_m = T
+\end{lstlisting}
+%
 What will be noted here is the fact that thermometers can be used to measure the temperature of components as well, such as batteries, ESCs or motors and provide a health status of those components.
 
 \section{Air Data}
@@ -101,9 +176,13 @@ For an efficient and safe aircraft flight, air data measurements are required. T
 
 Airspeed is measured using Pitot tubes, which take into account Bernoulli's equation to convert dynamic air pressure into airspeed readings. Essentially, a barometer is used to perform this reading.
 \begin{IEEEeqnarray}{rCl}
-	P_{t} &= & P + \frac{\rho V_a^2}{2} \IEEEyesnumber \IEEEyessubnumber \\
-	P_{t,m} &= & P_t  \IEEEyessubnumber \\	
+	P_{t} &= & P + \frac{\rho V_a^2}{2}\\
+	P_{t,m} &= & P_t 
 \end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	P_t_m = P_t
+\end{lstlisting}
 
 Aerodynamic angles $\alpha$ and $\beta$ can be measured using appropriate instruments, such as wind vanes, but such sensors are seldom found in medium and small UAVs, due to their size and weight.
 
@@ -113,6 +192,13 @@ Aerodynamic angles $\alpha$ and $\beta$ can be measured using appropriate instru
 \begin{equation}
 	\beta_m = \beta
 \end{equation}
+%
+\begin{lstlisting}
+	alpha_m = alpha
+	beta_m = beta
+\end{lstlisting}
+
+\todo[inline]{Cross-reference with \cite[p~208]{Laban1994}}
 
 \section{Distance Measurement}
 Instruments which measure the distance of the UAV from the ground belong to this category. Common types are ultrasonic sensors, laser range finders and LIDARs. Their range varies from a few meters to a few hundred meters and their price range varies accordingly. What all these sensors have in common is that their measurements have a fixed range, varying from $d_{rf,min}$, the minimum reading, up to $d_{rf,max}$, in terms of absolute magnitudes.
@@ -124,31 +210,44 @@ Instruments which measure the distance of the UAV from the ground belong to this
 	\end{array}
 	\right.
 \end{equation}
+%
+\begin{lstlisting}
+	down_rf = down
+	if (down_rf > down_rf_min ) down_rf = down_rf_min
+	if (down_rf < down_rf_max) down_rf = down_rf_max	
+\end{lstlisting}
 Some confusion may be caused by the direction of the comparison ranges, but keep in mind that using the NED frame, $d$ is negative when the airplane is above ground altitude.
 
 \section{Voltage Measurement}
 Voltage Measurement is a very useful means to assess the remaining energy capacity of an onboard battery. Even though the relation between remaining energy and output voltage is not linear, useful conclusions can be extracted.
 
-In general, any voltage level can be measured by such an instrument
+In general, any voltage level can be measured by such an instrument, but the most common measurement is that on the terminal connectors between the battery and the motor
 \begin{equation}
-	V_{i,m} = V_i
+	V_{mot,m} = V_{mot}
 \end{equation}
-
-but in the specific case of the battery voltage measurement we have
-\begin{equation}
-	V_{B,m} = V_B - I_o R_B
-\end{equation}
+%
+\begin{lstlisting}
+	V_mot_m = V_mot
+\end{lstlisting}
 
 \section{Current Measurement}
-Similarly to voltage measurements, current measurements are available as well. These are useful to monitor the power consumption of the aircraft and, in extension, are a valid means to approach the thrust produced by the power plant.
+Similarly to voltage measurements, current measurements are available as well. These are useful to monitor the power consumption of the aircraft and, in extension, are a valid means to approach the thrust produced by an electric power plant.
 
-Usually, current sensors are placed on the battery leads, since their most common occurrence measures only DC current.
+Current sensors are mostly used to measure low frequency currents and most commonly DC currents. The measurement of the instantaneous main battery current is the most common application.
+%
 \begin{equation}
-	I_{o,m} = I_o
+	I_{mot,m} = I_{mot}
 \end{equation}
+%
+\begin{lstlisting}
+	I_mot_m = I_mot
+\end{lstlisting}
 
 \section{Motor Angular Velocity Measurement}
 Finally, a quantity with great informational content is the rotational velocity of the motor shaft. This can be measured with commercial RPM sensors and can provide information on the thrust produced or even the health status of the motor itself.
 \begin{equation}
-	n_{m} = n
+	n_{prop,m} = n_{prop}
 \end{equation}
+\begin{lstlisting}
+	n_prop_m = n_prop
+\end{lstlisting}
