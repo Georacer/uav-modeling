@@ -379,22 +379,22 @@ Naturally, mass additions also affect the matrix of inertia of the aircraft. A m
 \begin{equation}
 	\Delta \bm{J}_{m_i} =
 	\begin{bmatrix}
-		y_{m_i} z_{m_i} m_{i}  & -x_{m_i} y_{m_i} m_i & -x_{m_i}z_{m_i}m_i   \\
-		-x_{m_i} y_{m_i} m_i & x_{m_i} z_{m_i} m_i  & -y_{m_i} z_{m_i} m_i \\
-		-x_{m_i}z_{m_i}m_i   & -y_{m_i} z_{m_i} m_i & x_{m_i} y_{m_i} m_i
+		(y_{m_i}^2 + z_{m_i}^2) m_{i} & -x_{m_i} y_{m_i} m_i         & -x_{m_i}z_{m_i}m_i          \\
+		-x_{m_i} y_{m_i} m_i          & (x_{m_i}^2 +  z_{m_i}^2) m_i & -y_{m_i} z_{m_i} m_i        \\
+		-x_{m_i}z_{m_i}m_i            & -y_{m_i} z_{m_i} m_i         & (x_{m_i}^2 + y_{m_i}^2) m_i
 	\end{bmatrix}
 \end{equation}
 
 \begin{lstlisting}[style=C-style]
-	J_delta_i[0] = y_mi*z_mi*m_i
+	J_delta_i[0] = (y_mi*y_mi+z_mi*z_mi)*m_i
 	J_delta_i[1] = -x_mi*y_mi*m_i
 	J_delta_i[2] = -x_mi*z_mi*m_i
 	J_delta_i[3] = -x_mi*y_mi*m_i
-	J_delta_i[4] = x_mi*z_mi*m_i
+	J_delta_i[4] = (x_mi*x_mi+z_mi*z_mi)*m_i
 	J_delta_i[5] = -y_mi*z_mi*m_i
 	J_delta_i[6] = -x_mi*z_mi*m_i
 	J_delta_i[7] = -y_mi*z_mi*m_i
-	J_delta_i[8] = x_mi*y_mi*m_i
+	J_delta_i[8] = (x_mi*x_mi+y_mi*y_mi)*m_i
 \end{lstlisting}
 
 In case of mass perturbations, the new matrix of inertia can be calculated and used in (\ref{eq:angVelDer}).
