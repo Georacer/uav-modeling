@@ -133,18 +133,15 @@ Having done the above necessary conversions, we can treat the GPS receiver as a 
 	down_gps = down
 \end{lstlisting}
 
-Additionally, most GPS receivers report ground velocities
-\begin{equation}
-v_{gps} = \lVert [\dot{n}\ \dot{e}]' \rVert
-\end{equation}
-and the direction of travel, also referred to as the \emph{course angle}
-\begin{equation}
-\chi_{gps} = \operatorname{atan2}\left({\dot{e}},{\dot{n}}\right)
-\end{equation}
+Additionally, most GPS receivers report ground speed and course angle
+\begin{IEEEeqnarray}{rCl}
+V_{g,gps} &=& V_g \\
+\chi_{gps} &=& \chi
+\end{IEEEeqnarray}
 %
 \begin{lstlisting}
-	V_g_gps = sqrt(dot_nort*dot_north + dot_east*dot_east)
-	chi_gps = atan2(dot_east,dot_north)
+	V_g_gps = V_g
+	chi_gps = chi
 \end{lstlisting}
 
 \section{Atmospheric Measurements}

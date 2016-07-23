@@ -21,7 +21,7 @@ In contrast, the origin of the so-called body-axes $\mathcal{F}_B$ is the center
 
 The derivative of the position is
 \begin{IEEEeqnarray}{rCl} \label{eq:posDot}
-	\dot{\bm{p}} &= & \bm{R}_b^T \bm{v_b}
+	\dot{\bm{p}} &= & \bm{R}_b^T \bm{v_i^b}
 \end{IEEEeqnarray}
 We denote with $R_b$ the transformation matrix \textbf{from the Inertial frame to the Body frame}. Its elements are:
 
@@ -92,7 +92,7 @@ This convention is called the \emph{Tait-Bryan angles} \cite{Berner2008}
 
 The time derivative of the Euler angles is
 \begin{equation}
-	\dot{\bm{\Phi}} = \mathcal{E}(\bm{\Phi})\bm{\omega_b}
+	\dot{\bm{\Phi}} = \mathcal{E}(\bm{\Phi})\bm{\omega_b} \label{eq:phi_dot}
 \end{equation}
 where $\mathcal{E}(\bm{\Phi})$ is a rotation matrix, dependent upon the current orientation.
 
@@ -118,6 +118,19 @@ and equivalenty, $ \mathcal{E}(\bm{\Phi})$ is written as
 \end{bmatrix}
 \end{equation}
 
+Inverting \ref{eq:phi_dot} and solving for the angular velocity is possible
+%
+\begin{IEEEeqnarray}{rCl}
+	p &=& \dot{\phi} - \sin \theta \dot{\psi} \\
+	q &=& \cos \phi \dot{\theta} + \sin \phi \cos \theta \dot{\psi} \\
+	r &=& - \sin \phi \dot{\theta} + \cos \phi \cos \theta \dot{\psi}
+\end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	p = dot_phi - sin(theta)*dot_psi
+	q = cos(phi)*dot_theta + sin(phi)*cos(theta)*dot_psi
+	r = -sin(phi)*dot_theta + cos(phi)*cos(theta)*dot_psi
+\end{lstlisting}
 \section{Angular velocity}
 
 We define the angular velocity vector as
@@ -141,8 +154,10 @@ The inertia matrix is defined as
 		-\int xz~dm        & -\int yz~dm        & \int(x^2 + y^2)~dm
 	\end{bmatrix}
 \end{equation}
+%
 Commonly, the inertia matrix in fixed-wing aircraft is considered to have zero elements in the x-y and y-z direction, since they are symmetric about the x-z plane.
-Still, in this section, the full, non-symmetric matrix of inertia will be used, as this is the most general case.
+Still, in this section, the full, non-symmetric matrix of inertia will be used, as this is the most general (albeit unlikely) case.
+%
 \begin{equation}\label{eq:inertiaMat}
 	\bm{J} = 
 	\begin{bmatrix}
@@ -188,10 +203,14 @@ Cross products can be written in matrix form, when implemented as explicit matri
 0  & -r & p  \\
 r  & 0  & -p \\
 -q & p  & 0
-\end{bmatrix} \bm{v}
+\end{bmatrix} \bm{v} =  [\bm{\omega}]_\times \bm{v} \label{eq:matrix_cross}
 \end{equation}
-Where $\bm{v}$ is an arbitrary vector. Similarly,
+%
+Where $\bm{v}$ is an arbitrary vector. The notation $[\bm{\omega}]_\times$ represents the skew-symmetric matrix which performs the same matrix operation as the cross product.
+
+Similarly,
 \begin{equation}
+%
 \bm{\omega} \times (\bm{\omega} \times \bm{v}) = \begin{bmatrix}
 -r^2-q^2 & pq & pr \\
 pq & -p^2 -r^2 & qr\\
@@ -209,9 +228,9 @@ To facilitate derivations, we define
 			-q & p & 0 
 		\end{bmatrix} \left(
 		\begin{bmatrix}
-			j_{xx} + j_{xy} + j_{xz} \\
-			j_{yx} + j_{yy} + j_{yz} \\
-			j_{zx} + j_{zy} + j_{zz}
+			j_{xx} & j_{xy} & j_{xz} \\
+			j_{yx} & j_{yy} & j_{yz} \\
+			j_{zx} & j_{zy} & j_{zz}
 		\end{bmatrix}
 		\begin{bmatrix}
 			p \\ q \\ r
@@ -271,25 +290,90 @@ Thus, \ref{eq:angVelDer} becomes
 	dot_r = Ji[6]*(T_x-C[0]) + Ji[7]*(T_y - C[1]) + Ji[8]*(T_z - C[2])
 \end{lstlisting}
 
+Conversely, if needed, we can write
+\begin{IEEEeqnarray}{rCl}
+	\bm{T}_b &=& \bm{J}\dot{\bm{\omega}} + \bm{\omega}\times\left( \bm{J}\bm{\omega} \right) \Leftrightarrow \\
+	\bm{T}_b &=& \bm{J}\dot{\bm{\omega}} + \bm{C} \Leftrightarrow \\
+	\begin{bmatrix}
+		T_x \\ T_y \\ Tz
+	\end{bmatrix}
+	& = &
+	\begin{bmatrix}
+		j_{xx} & j_{xy} & j_{xz} \\
+		j_{yx} & j_{yy} & j_{yz} \\
+		j_{zx} & j_{zy} & j_{zz}
+	\end{bmatrix}
+	\begin{bmatrix}
+		\dot{p} \\ \dot{q} \\ \dot{r}
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		c_{1} \\
+		c_{2} \\
+		c_{3}
+	\end{bmatrix}
+\end{IEEEeqnarray}
+and in scalar form
+%
+\begin{IEEEeqnarray}{rCl}
+	T_x &=& j_{xx}\dot{p} + j_{xy}\dot{q} + j{xz}\dot{r} + c_1 \\
+	T_y &=& j_{yx}\dot{p} + j_{yy}\dot{q} + j{yz}\dot{r} + c_2 \\
+	T_z &=& j_{zx}\dot{p} + j_{zy}\dot{q} + j{zz}\dot{r} + c_3
+\end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	T_x = J[0]*dot_p + J[1]*dot_q + J[2]*dot_r + C[0]
+	T_y = J[3]*dot_p + J[4]*dot_q + J[5]*dot_r + C[1]
+	T_z = J[6]*dot_p + J[7]*dot_q + J[8]*dot_r + C[2]
+\end{lstlisting}
 
 
 \section{Linear Velocity}
 
-We define linear velocity and its components as
+We define inertial linear velocity expressed in the body frame and its components as
 \begin{equation}
-	\bm{v_b} = [u\ v\ w]^T
+	\bm{v}_i^b = [u\ v\ w]^T
 \end{equation}
-
-Its time derivative is
+The inertial linear velocity expressed in the inertial frame is, as we saw earlier
 \begin{equation}
-	\dot{\bm{v_b}} = -\bm{\omega_b} \times \bm{v_b} + \frac{\bm{F_b}}{m}
+	\bm{v}_i^i = [\dot{n}\ \dot{e}\ \dot{d}]^T
+\end{equation}
+The norm of the inertial linear velocity is
+\begin{equation}
+	V_i = \lVert [u\ v\ w] \rVert = \lVert [\dot{n}\ \dot{e}\ \dot{d}] \rVert
+\end{equation}
+%
+\begin{lstlisting}
+	V_i = sqrt(u*u + v*v + w*w)
+	V_i = sqrt(dot_north*dot_north + dot_east*dot_east + dot_down*dot_down)
+\end{lstlisting}
+
+Sometimes, the projection of the inertial velocity on the North-East plane is of interest and two more quantities accompany it. First, we define the \textit{course angle} $\chi$, as the angle that the projection of the UAV trajectory on the North-East plane has at any time in terms of the North direction. The \textit{flight path angle} $\gamma$ is the angle between the inertial velocity vector and the North-East plane. Finally, the \textit{ground velocity} is defined as the norm of the projection of the inertial velocity vector on the North-East plane.
+%
+\begin{IEEEeqnarray}{rCl}
+\chi &=& \operatorname{atan2}\left({\dot{e}},{\dot{n}}\right) \\
+\gamma &=& \operatorname{asin}\left({-\dot{d}}/V_i\right) \label{eq:gamma}\\
+V_g &=& V_i \cos \gamma
+\end{IEEEeqnarray}
+%
+\begin{lstlisting}
+	chi = atan2(dot_east, dot_north)
+	gamma = asin(-dot_down/V_i)
+	V_g = V_i*cos(gamma)
+\end{lstlisting}
+%
+The negative sign in \ref{eq:gamma} maintains the convention where increase in altitude should correspond to positive $\gamma$ values, while at the same time $\dot{d}$ decreases.
+
+The time derivative of the inertial velocity expressed in the body frame is
+\begin{equation}
+	\dot{\bm{v}_i^b} = -\bm{\omega^b} \times \bm{v}_i^b + \frac{\bm{F_b}}{m}
 \end{equation}
 
 which is equivalent to
 \begin{IEEEeqnarray}{rCl}
-	\dot{u} &= & rv -qw + \frac{F_bx}{m} \IEEEyessubnumber \\
-	\dot{v} &= & -ru + pw + \frac{F_by}{m} \IEEEyessubnumber \\
-	\dot{w} &= & qu -pv + \frac{F_bz}{m} \IEEEyessubnumber
+	\dot{u} &= & rv -qw + \frac{F_{b,x}}{m} \IEEEyessubnumber \\
+	\dot{v} &= & -ru + pw + \frac{F_{b,y}}{m} \IEEEyessubnumber \\
+	\dot{w} &= & qu -pv + \frac{F_{b,z}}{m} \IEEEyessubnumber
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
@@ -300,12 +384,12 @@ which is equivalent to
 
 We need to define the wind velocity, in the body frame. This is the velocity of the air-mass, moving above the ground, expressed in the body axes.
 \begin{equation}
-	\bm{v_w} = [u_w\ v_w\ w_w]^T
+	\bm{v}^w = [u_w\ v_w\ w_w]^T
 \end{equation}
 
 The resulting relative (air)speed of the aircraft is
 \begin{equation}
-	\bm{v_r} = \bm{v}_b - \bm{v}_w
+	\bm{v}_r = \bm{v}_i^b - \bm{v}_w
 \end{equation}
 
 \begin{lstlisting}[style=C-style]
@@ -364,7 +448,7 @@ The overall mass and center of mass are
 
 \begin{IEEEeqnarray}{rCl}\label{eq:masses}
 	m &= & m_{nom} + \sum m_i \IEEEyesnumber \IEEEyessubnumber \\
-	\bm{p}_{m_{nom}} &= &[0\ 0\ 0]^T \IEEEyessubnumber \\
+	\bm{p}_{m,{nom}} &= &[0\ 0\ 0]^T \IEEEyessubnumber \\
 	\bm{p}_{CM} &= & \frac{1}{m} \left( \sum \bm{p}_{m_i} m_i\right)
 \end{IEEEeqnarray}
 
@@ -375,7 +459,14 @@ The overall mass and center of mass are
 	p_cm_z = 1/m*(z_mi*m_i)
 \end{lstlisting}
 
-Naturally, mass additions also affect the matrix of inertia of the aircraft. A mass $m_{i}$ planted at the point $p_{m_i} = [x_{m_i}, y_{m_i}, z_{m_i}]^T$ perturbs the matrix of inertia additively by
+Naturally, mass additions also affect the matrix of inertia of the aircraft. A mass $m_{i}$ planted at the point $p_{m_i} = [x_{m_i}, y_{m_i}, z_{m_i}]^T$ perturbs the matrix of inertia additively by \cite{wiki:inertia_matrix}
+%
+\begin{equation}
+	\Delta \bm{J}_{mi} = - m_i [p_{m_i}]_\times^2
+\end{equation}
+%
+which, according to \ref{eq:matrix_cross}, in matrix form is
+%
 \begin{equation}
 	\Delta \bm{J}_{m_i} =
 	\begin{bmatrix}
