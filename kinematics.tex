@@ -313,12 +313,13 @@ Conversely, if needed, we can write
 		c_{3}
 	\end{bmatrix}
 \end{IEEEeqnarray}
+%
 and in scalar form
 %
 \begin{IEEEeqnarray}{rCl}
-	T_x &=& j_{xx}\dot{p} + j_{xy}\dot{q} + j{xz}\dot{r} + c_1 \\
-	T_y &=& j_{yx}\dot{p} + j_{yy}\dot{q} + j{yz}\dot{r} + c_2 \\
-	T_z &=& j_{zx}\dot{p} + j_{zy}\dot{q} + j{zz}\dot{r} + c_3
+	T_x &=& j_{xx}\dot{p} + j_{xy}\dot{q} + j_{xz}\dot{r} + c_1 \\
+	T_y &=& j_{yx}\dot{p} + j_{yy}\dot{q} + j_{yz}\dot{r} + c_2 \\
+	T_z &=& j_{zx}\dot{p} + j_{zy}\dot{q} + j_{zz}\dot{r} + c_3
 \end{IEEEeqnarray}
 %
 \begin{lstlisting}
@@ -444,7 +445,7 @@ V_a \\ 0 \\ 0
 \section{Mass Distribution}
 
 It is useful to model the mass distribution of our aircraft. It has a nominal mass $m_{nom}$, placed at the center of mass, the origin of the body axes. Any extra weights, such as payloads, debris, or component detachment can be modeled with extra masses $m_i$. Under this definition, $m_i$ is allowed to be negative.
-The overall mass and center of mass are
+The overall mass and center of mass location are:
 
 \begin{IEEEeqnarray}{rCl}\label{eq:masses}
 	m &= & m_{nom} + \sum m_i \IEEEyesnumber \IEEEyessubnumber \\
@@ -454,10 +455,24 @@ The overall mass and center of mass are
 
 \begin{lstlisting}[style=C-style]
 	m = m_nom + m_i
-	p_cm_x = 1/m*(x_mi*m_i)
-	p_cm_y = 1/m*(y_mi*m_i)
-	p_cm_z = 1/m*(z_mi*m_i)
+	p_cm_x = 1/m*(p_mi_x*m_i)
+	p_cm_y = 1/m*(p_mi_y*m_i)
+	p_cm_z = 1/m*(p_mi_z*m_i)
 \end{lstlisting}
+
+The shifts in center of mass affect the dynamic response of the aircraft and should be taken into account. Consider Figure \ref{fig:CG_shift} where in the nominal case on the left, a thrust force is applied on the propeller. The force is aligned with the center of mass, thus no torque is generated. Now let's consider an edge case, where a very dense, heavy point mass has been added to the tip of the right wing. The center of mass of the airplane is now about midway of the right wing. As a result, the thrust force will now apply a torque on the z-axis, which needs to be covered by our modeling.
+
+One approach which would not bring the required results would be to leave the nominal CoM in its original place and model the extra mass as a separate body, which is subject to gravity force. This force would be added to the force balance and, due to its lever on the CoM, it would also apply torque, weighing the right wing down. However, the torque produced by the thrust force cannot be created with this modeling.
+
+The correct approach is to re-calculate the location of the center of mass, as per \ref{eq:masses}. Gravity is still considered to not exert any moments on the aircraft body, but now there is a level on the thrust force, which will correctly produce torque. The same holds with the lift force, which is applied on the center of lift and will produce a rolling moment to the right.
+
+\begin{figure}\label{fig:CM_shift}
+\centering
+\includegraphics[width=0.4\linewidth]{figures/CG_shift_normal}
+\includegraphics[width=0.4\linewidth]{figures/CG_shift_shifted}
+\caption[The effect of CoM shift]{The effect of CoM shift}
+\label{fig:CG_shift}
+\end{figure}
 
 Naturally, mass additions also affect the matrix of inertia of the aircraft. A mass $m_{i}$ planted at the point $p_{m_i} = [x_{m_i}, y_{m_i}, z_{m_i}]^T$ perturbs the matrix of inertia additively by \cite{wiki:inertia_matrix}
 %
@@ -476,19 +491,93 @@ which, according to \ref{eq:matrix_cross}, in matrix form is
 	\end{bmatrix}
 \end{equation}
 
-\begin{lstlisting}[style=C-style]
-	J_delta_i[0] = (y_mi*y_mi+z_mi*z_mi)*m_i
-	J_delta_i[1] = -x_mi*y_mi*m_i
-	J_delta_i[2] = -x_mi*z_mi*m_i
-	J_delta_i[3] = -x_mi*y_mi*m_i
-	J_delta_i[4] = (x_mi*x_mi+z_mi*z_mi)*m_i
-	J_delta_i[5] = -y_mi*z_mi*m_i
-	J_delta_i[6] = -x_mi*z_mi*m_i
-	J_delta_i[7] = -y_mi*z_mi*m_i
-	J_delta_i[8] = (x_mi*x_mi+y_mi*y_mi)*m_i
+%\begin{lstlisting}[style=C-style]
+%	J_delta_i[0] = (y_mi*y_mi+z_mi*z_mi)*m_i
+%	J_delta_i[1] = -x_mi*y_mi*m_i
+%	J_delta_i[2] = -x_mi*z_mi*m_i
+%	J_delta_i[3] = -x_mi*y_mi*m_i
+%	J_delta_i[4] = (x_mi*x_mi+z_mi*z_mi)*m_i
+%	J_delta_i[5] = -y_mi*z_mi*m_i
+%	J_delta_i[6] = -x_mi*z_mi*m_i
+%	J_delta_i[7] = -y_mi*z_mi*m_i
+%	J_delta_i[8] = (x_mi*x_mi+y_mi*y_mi)*m_i
+%\end{lstlisting}
+
+In case of mass perturbations, the new matrix of inertia can be calculated as
+%
+\begin{equation}
+	\bm{J}' = \bm{J}_{nom} + \Delta\bm{J}_{m_i}
+\end{equation}
+%
+and used in (\ref{eq:angVelDer}). It should be emphasized that the resulting matrix of inertia is expressed in the previous, initial body-frame axes system. However, as we saw in the beginning of the section, mass additions are modeled with a shift of the origin of the center of mass. The old matrix of inertia must be shifted to the new origin, as per \cite{Peraire2008}
+
+\begin{IEEEeqnarray}{rCl}
+	j_{xx} &=&\int((y_{cm}+y')^2 + (z_{cm}+z')^2)~dm \IEEEyesnumber \IEEEyessubnumber \\
+	j_{xy} &=& -\int (x_{cm}+x')(y_{cm}+y')~dm \IEEEyessubnumber\\
+	j_{xz} &=& -\int (x_{cm}+x')(z_{cm}+z')~dm \IEEEyessubnumber\\
+	j_{yx} &=& -\int (x_{cm}+x')(y_{cm}+y')~dm \IEEEyessubnumber\\
+	j_{yy} &=& \int((x_{cm}+x')^2 + (z_{cm}+z')^2)~dm \IEEEyessubnumber\\
+	j_{yz} &=& -\int (y_{cm}+y')(z_{cm}+z')~dm \IEEEyessubnumber\\
+	j_{zx} &=& -\int (x_{cm}+x')(z_{cm}+z')~dm \IEEEyessubnumber\\
+	j_{zy} &=& -\int (y_{cm}+y')(z_{cm}+z')~dm \IEEEyessubnumber\\
+	j_{zz} &=& \int((x_{cm}+x')^2 + (y_{cm}+y')^2)~dm \IEEEyessubnumber
+\end{IEEEeqnarray}
+%
+or equivalently
+%
+\begin{IEEEeqnarray}{rCl}
+	j_{xx} &=& j'_{xx} + m(y_{cm}^2 + z_{cm}^2) \IEEEyesnumber \IEEEyessubnumber \\
+	j_{xy} &=& j'_{xy} + mx_{cm}y_{cm} \IEEEyessubnumber\\
+	j_{xz} &=& j'_{xz} + mx_{cm}z_{cm} \IEEEyessubnumber\\
+	j_{yx} &=& j'_{yx} + my_{cm}x_{cm} \IEEEyessubnumber\\
+	j_{yy} &=& j'_{yy} + m(x_{cm}^2 + z_{cm}^2) \IEEEyessubnumber\\
+	j_{yz} &=& j'_{yz} + my_{cm}z_{cm} \IEEEyessubnumber\\
+	j_{zx} &=& j'_{zx} + mz_{cm}x_{cm} \IEEEyessubnumber\\
+	j_{zy} &=& j'_{zy} + mz_{cm}y_{cm} \IEEEyessubnumber\\
+	j_{zz} &=& j'_{zz} + m(x_{cm}^2 + y_{cm}^2) \IEEEyessubnumber
+\end{IEEEeqnarray}
+%
+which can be written in the form
+%
+\begin{equation}
+	\bm{J} = \bm{J}' + \Delta\bm{J}_s
+\end{equation}
+%
+This expression, which gives the new matrix of inertia, after the mass additions, expressed in the new center of mass, can be integrated into one step.
+
+The diagonal elements are of the form
+\todo{verify the calculations}
+%
+\begin{IEEEeqnarray}{rCl}
+	j_{xx} &=& j_{nom,xx} + (y_{m_i}^2 + z_{mi}^2)m_i + m\left( \left( \frac{y_{m_i}m_i}{m} \right)^2 + \left(\frac{z_{m_i}m_i}{m} \right)^2 \right) \IEEEnonumber \\
+	&=& j_{nom,xx} + (y_{m_i}^2 + z_{mi}^2)m_i + \frac{1}{m}\left( \left(y_{m_i}m_i\right)^2 + \left(z_{m_i}m_i\right)^2 \right) \IEEEnonumber \\
+	&=& j_{nom,xx} + \frac{1}{m} \left( m_i (y_{m_i}^2 + z_{m_i}^2)(m_i+m) \right) \IEEEnonumber \\
+	&=& j_{nom,xx} +  (y_{m_i}^2 + z_{m_i}^2) \left( \frac{2m_i^2 + m_{nom} m_i}{m_{nom}+m_i} \right)
+\end{IEEEeqnarray}
+%
+while the off-diagonal elements are of the form
+%
+\begin{IEEEeqnarray}{rCl}
+	j_{xy} &=& j_{xy} - x_{m_i}y_{m_i}m_i + m x_{cm} y_{cm} \IEEEnonumber \\
+	&=& j_{nom,xy} - x_{m_i}y_{m_i}m_i + m \frac{x_{m_i}m_i}{m} \frac{y_{m_i}m_i}{m} \IEEEnonumber \\
+	&=& j_{nom,xy} + x_{m_i}y_{m_i} \left( -m_i + \frac{m_i^2}{m} \right) \IEEEnonumber \\
+	&=& j_{nom,xy} - x_{m_i}y_{m_i} \left( \frac{m_{nom}m_i}{m_{nom}+m_i} \right)
+\end{IEEEeqnarray}
+
+\begin{lstlisting}
+	J[0] = J_nom[0] + (p_mi_y*p_mi_y + p_mi_*p_mi_z) * ( (2*m_i*m_i + m_nom*m_i) / (m_nom + m_i) )
+	J[1] = J_nom[1] - p_mi_x*p_mi_y*( (m_nom*m_i) / (m_nom+m_i) )
+	J[2] = J_nom[2] - p_mi_x*p_mi_z*( (m_nom*m_i) / (m_nom+m_i) )
+	J[3] = J_nom[3] - p_mi_y*p_mi_x*( (m_nom*m_i) / (m_nom+m_i) )
+	J[4] = J_nom[4] + (p_mi_x*p_mi_x+p_mi_z*p_mi_z) * ( (2*m_i*m_i + m_nom*m_i) / (m_nom + m_i) )	
+	J[5] = J_nom[5] - p_mi_y*p_mi_z*( (m_nom*m_i) / (m_nom+m_i) )
+	J[6] = J_nom[6] - p_mi_z*p_mi_x*( (m_nom*m_i) / (m_nom+m_i) )
+	J[7] = J_nom[7] - p_mi_z*p_mi_y*( (m_nom*m_i) / (m_nom+m_i) )
+	J[8] = J_nom[8] + (p_mi_x*p_mi_x+p_mi_y*p_mi_y) * ( (2*m_i*m_i + m_nom*m_i) / (m_nom + m_i) )
+	
 \end{lstlisting}
 
-In case of mass perturbations, the new matrix of inertia can be calculated and used in (\ref{eq:angVelDer}).
+Thus, we see how we can calculate the new location of the center of mass and the new matrix of inertia on the new center of mass, for arbitrary mass additions and subtractions.
 
 \section{Wind}\label{sec:wind}
 The effect of wind is often omitted in works containing simple models of UAVs, but its contribution is deciding when models are required to compare with reality, especially when it comes to fixed-wing airframes. The behaviour and performance of the aircraft is greatly affected by the movement of the air mass that it flies in and thus this movement should be taken into account.
