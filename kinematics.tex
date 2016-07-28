@@ -565,7 +565,7 @@ while the off-diagonal elements are of the form
 \end{IEEEeqnarray}
 
 \begin{lstlisting}
-	J[0] = J_nom[0] + (p_mi_y*p_mi_y + p_mi_*p_mi_z) * ( (2*m_i*m_i + m_nom*m_i) / (m_nom + m_i) )
+	J[0] = J_nom[0] + (p_mi_y*p_mi_y + p_mi_z*p_mi_z) * ( (2*m_i*m_i + m_nom*m_i) / (m_nom + m_i) )
 	J[1] = J_nom[1] - p_mi_x*p_mi_y*( (m_nom*m_i) / (m_nom+m_i) )
 	J[2] = J_nom[2] - p_mi_x*p_mi_z*( (m_nom*m_i) / (m_nom+m_i) )
 	J[3] = J_nom[3] - p_mi_y*p_mi_x*( (m_nom*m_i) / (m_nom+m_i) )

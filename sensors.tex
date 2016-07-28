@@ -19,15 +19,15 @@ In the ideal case where the accelerometer is installed at the center of gravity 
 or in scalar form
 %
 \begin{IEEEeqnarray}{rCl}
-	\dot{u}_m &=& \frac{F_x}{m} - (-\sin \theta ~m g) \IEEEyesnumber \IEEEyessubnumber\\
-	\dot{v}_m &=& \frac{F_y}{m} -  \sin \phi \cos \theta ~m g  \IEEEyessubnumber\\
-	\dot{w}_m &=& \frac{F_z}{m} -  \cos \phi \cos \theta ~m g \IEEEyessubnumber
+	a_{m,x} &=& \frac{F_x}{m} - (-\sin \theta  g) \IEEEyesnumber \IEEEyessubnumber\\
+	a_{m,y} &=& \frac{F_y}{m} -  \sin \phi \cos \theta  g  \IEEEyessubnumber\\
+	a_{m,z} &=& \frac{F_z}{m} -  \cos \phi \cos \theta  g \IEEEyessubnumber
 \end{IEEEeqnarray}
 %
 \begin{lstlisting}
-	dot_u_m = F_x/m + sin(theta)*m*g
-	dot_v_m = F_y/m - sin(phi)*cos(theta)*m*g
-	dot_w_m = F_z/m - cos(phi)*cos(theta)*m*g
+	a_m_x = F_x/m + sin(theta)*g
+	a_m_y = F_y/m - sin(phi)*cos(theta)*g
+	a_m_z = F_z/m - cos(phi)*cos(theta)*g
 \end{lstlisting}
 
 However, this is an ideal case. Most of the times, the sensor is placed in a point with coordinates $\bm{p}_{acc}$ relative to the center of gravity. The resulting measurement, affected by the aircraft rotational velocity will be \cite[p.~26]{Stevens2003}\cite[p.~179]{Laban1994}
@@ -54,9 +54,9 @@ which can be expanded into
 \end{IEEEeqnarray}
 %
 \begin{lstlisting}
-	dot_u_m = F_x/m + sin(theta)*m*g + (-r*r-q*q)*p_acc_x + (p*q-dot_r)*p_acc_y + (p*r+dot_q)*p_acc_y
-	dot_v_m = F_y/m - sin(phi)*cos(theta)*m*g + (p*q+dot_r)*p_acc)x + (-p*p-r*r)*p_acc_y + (q*r+dot_p)*p_acc_z
-	dot_w_m = F_z/m - cos(phi)*cos(theta)*m*g + (p*r+dot_q)*p_acc_x + (q*r+dot_p)*p_acc)y + (-p*p-q*q)*p_acc_z
+	a_m_x = F_x/m + sin(theta)*m*g + (-r*r-q*q)*p_acc_x + (p*q-dot_r)*p_acc_y + (p*r+dot_q)*p_acc_y
+	a_m_y = F_y/m - sin(phi)*cos(theta)*m*g + (p*q+dot_r)*p_acc)x + (-p*p-r*r)*p_acc_y + (q*r+dot_p)*p_acc_z
+	a_m_z = F_z/m - cos(phi)*cos(theta)*m*g + (p*r+dot_q)*p_acc_x + (q*r+dot_p)*p_acc)y + (-p*p-q*q)*p_acc_z
 \end{lstlisting}
 %
 One could opt to further substitute $\dot{\omega}$ from eq~\ref{eq:angVelDer}. In the case of simulation, this is completely legitimate. On the other hand, if the equations are used to compensate for real-world measurements, taking the differentiated gyroscope signal is much more feasible.
@@ -178,6 +178,7 @@ Airspeed is measured using Pitot tubes, which take into account Bernoulli's equa
 \end{IEEEeqnarray}
 %
 \begin{lstlisting}
+	P_t = P + 0.5*rho*V_a*V_a
 	P_t_m = P_t
 \end{lstlisting}
 

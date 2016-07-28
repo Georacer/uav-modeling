@@ -91,7 +91,7 @@ Naturally, the motor and propeller produce moments. Similarly to the aerodynamic
 	\bm{T_t} = \begin{bmatrix}
 		T_{tx} \\ T_{ty} \\ T_{tz}
 	\end{bmatrix}
-	 + (\bm{p}_{prop}-\bm{p}_{CG})\times \bm{F}_p
+	 + (\bm{p}_{prop}-\bm{p}_{CM})\times \bm{F}_p
 \end{equation}
 \begin{IEEEeqnarray}{rCl}
 	T_{tx,tot} &= & T_{tx} -dz F_{ty} + dy F_{tz}\IEEEyessubnumber\\
@@ -105,7 +105,7 @@ dy = p_prop_y - p_cm_y
 dz = p_prop_z - p_cm_z
 T_ttot_x = T_t_x - dz*F_t_y + dy*F_t_z
 T_ttot_y = T_t_y + dz*F_t_x - dx*F_t_z
-T_ttot_z = T_t_z - dy*F_t_z + dx*F_t_y
+T_ttot_z = T_t_z - dy*F_t_x + dx*F_t_y
 \end{lstlisting}
 
 We opt to consider in our model only the aforementioned counter-moment produced in the x-axis by the propeller and motor, and not gyroscopic effects caused by the spinning propeller disc:

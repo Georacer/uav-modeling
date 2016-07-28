@@ -64,7 +64,7 @@ Sources of such additional moments are the stability margin (how much forward th
 	dz = p_cl_z - p_cm_z
 	T_atot_x = T_a_x - dz*F_a_y + dy*F_a_z
 	T_atot_y = T_a_y + dz*F_a_x - dx*F_a_z
-	T_atot_z = T_a_z - dy*F_a_z + dx*F_a_y
+	T_atot_z = T_a_z - dy*F_a_x + dx*F_a_y
 \end{lstlisting}
 
 The next step in exploring the aerodynamic model is the definition of dynamic pressure. This quantity expresses the pressure exerted by the air moving around the airplane per unit of surface. It is proportional with the density of the air and with the square of the airspeed. Dynamic pressure is a crucial scaling factor for the rest of the aerodynamic equations
@@ -91,6 +91,8 @@ We are now able to express the force components as the product of dynamic pressu
 	F_L = q_bar*S*C_L
 \end{lstlisting}
 
+Generally, the aerodynamic coefficients are functions of the airspeed, aerodynamic angles, angular velocity and control inputs.
+
 \begin{IEEEeqnarray}{rCl}
 	C_D &= &C_D(V_a, \alpha, q, \delta_e) \IEEEyesnumber \IEEEyessubnumber \\
 	C_Y &= &C_Y(V_a, \beta, p, r, \delta_a, \delta_r) \IEEEyessubnumber\\
@@ -109,43 +111,44 @@ The aerodynamic moments are defined in a similar fashion, with the additional in
 	T_a_y = q_bar*S*c*C_m
 	T_a_z = q_bar*S*b*C_n
 \end{lstlisting}
-
+%
 \begin{IEEEeqnarray}{rCl}
 	C_l &= &C_l(V_a, \beta, p, r, \delta_a, \delta_r) \IEEEyesnumber \IEEEyessubnumber \\
 	C_m &= &C_m(V_a, \alpha, q, \delta_e) \IEEEyessubnumber\\
 	C_n &= &C_n(V_a, \beta, p, r, \delta_a, \delta_r) \IEEEyessubnumber
 \end{IEEEeqnarray}
-
+%%
 Finally, a model for the aerodynamic coefficients is provided. Undoubtedly, the most common and established approach is to use multivariable polynomials which are linear with respect to their coefficients. This representation lends itself nicely for parameter identification techniques, such as least-squares flavours, very common in real-world aircraft design and testing.
-\begin{IEEEeqnarray}{rCl} \label{eq:forceCoeff}
-	C_D &= & C_{D0} + C_{D\alpha} \alpha + C_{Dq} \frac{c}{2V_a}q + C_{D\delta_e} \delta_e \IEEEyesnumber \IEEEyessubnumber \\
-	C_Y &= & C_{Y0} + C_{Y\beta} \beta + C_{Yp} \frac{b}{2V_a}p + C_{Yr}\frac{b}{2V_a}r + C_{D\delta_a} \delta_a + C_{Y\delta r} \delta_r \IEEEyessubnumber \\
-	C_L &= & C_{L0} + C_{L\alpha} \alpha + C_{Lq}\frac{c}{2V_a}q + C_{L\delta_e} \delta_e \IEEEyessubnumber 
+%
+\begin{IEEEeqnarray}{rCl} \label{eq:forceCoeff} 
+	C_D &=& C_{D,0} + C_{D,\alpha}\alpha+C_{D,q}\frac{c}{2V_a}q + C_{D,\delta_e}\delta_e \IEEEyesnumber \IEEEyessubnumber\\
+	C_Y &=& C_{Y,0} + C_{Y,\beta}\beta + C_{Y,p}\frac{b}{2V_a}p + C_{Y,r}\frac{b}{2V_a}r + C_{Y,\delta_a}\delta_a + C_{Y,\delta_r}\delta_r \IEEEyessubnumber\\
+	C_L &=& C_{L,0} + C_{L,\alpha}\alpha+C_{L,q}\frac{c}{2V_a}q +  C_{L,\delta_e}\delta_e \IEEEyessubnumber	
 \end{IEEEeqnarray}
-
-\begin{lstlisting}[style=C-style]
-	C_D = C_D0 + C_Dalpha*alpha + C_Dq*c*0.5/V_a*q + C_Ddeltae*deltae
-	C_Y = C_Y0 + C_Ybeta*beta + C_Yp*b*0.5/V_a*p + C_Yr*b*0.5/V_a*r + C_Ddeltaa*deltaa + C_Ydeltar*deltar
-	C_L = C_L0 + C_Lalpha*alpha + C_Lq*c*0.5/V_a*q + C_Ldeltae*deltae
+%
+\begin{lstlisting}
+C_D = C_D_0 + C_D_alpha*alpha + C_D_q*c*0.5/V_a*q + C_D_delta_e*delta_e
+C_Y = C_Y_0 + C_Y_beta*beta + C_Y_p*b*0.5/V_a*p + C_Y_r*b*0.5/V_a*r + C_Y_delta_a*delta_a + C_Y_delta_e*delta_e
+C_L = C_L_0 + C_L_alpha*alpha + C_L_q*c*0.5/V_a*q + C_L_delta_e*delta_e
 \end{lstlisting}
-
-\begin{IEEEeqnarray}{rCl} \label{eq:torqueCoeff}
-	C_l &= & C_{l0} + C_{l\beta} \beta + C_{lp}\frac{b}{2V_a}p + C_{lr}\frac{b}{2V_a}r + C_{l\delta_a} \delta_a + C_{l\delta_r} \delta_r \IEEEyesnumber \IEEEyessubnumber \\
-	C_m &= & C_{m0} + C_{m\alpha} \alpha + C_{mq} \frac{c}{2V_a}q + C_{m\delta_e} \delta_e \IEEEyessubnumber \\
-	C_n &= & C_{n0} + C_{n\beta} \beta + C_{np} \frac{b}{2V_a}p + C_{nr}\frac{b}{2V_a}r + C_{n\delta_a} \delta_a + C_{n \delta_r} \delta_r \IEEEyessubnumber
+%
+\begin{IEEEeqnarray}{rCl} \label{eq:torqueCoeff} 
+	C_l &=& C_{l,0} + C_{l,\beta}\beta + C_{l,p}\frac{b}{2V_a}p + C_{l,r}\frac{b}{2V_a}r + C_{l,\delta_a}\delta_a + C_{l,\delta_r}\delta_r \IEEEyesnumber \IEEEyessubnumber \\
+	C_m &=& C_{m,0} + C_{m,\alpha}\alpha + C_{m,q}\frac{c}{2V_a}q + C_{m,\delta_e}\delta_e \IEEEyessubnumber\\
+	C_n &=& C_{n,0} + C_{n,\beta}\beta + C_{n,p}\frac{b}{2V_a}p + C_{n,r}\frac{b}{2V_a}r + C_{n,\delta_a}\delta_a + C_{n,\delta_r}\delta_r \IEEEyessubnumber
 \end{IEEEeqnarray}
-
-\begin{lstlisting}[style=C-style]
-	C_l = C_l0 + C_lbeta*beta + C_lp*b*0.5/V_a*p + C_lr*b*0.5/V_a*r + C_ldeltaa*deltaa + C_ldeltar*deltar
-	C_m = C_m0 + C_malpha*alpha + C_mq*c*0.5/V_a*q + C_mdeltae*deltae
-	C_n = C_n0 + C_nbeta*beta + C_np*b*0.5/V_a*p + C_nr*b*0.5/V_a*r + C_ndeltaa*deltaa + C_n_deltar*deltar
+%
+\begin{lstlisting}
+	C_l = C_l_0 + C_l_beta*beta + C_l_p*b*0.5/V_a*p + C_l_r*b*0.5/V_a*r + C_ldelta_a*delta_a + C_ldelta_r*delta_r 
+	C_m = C_m_0 + C_m_alpha*alpha + C_m_q*c*0.5/V_a*q + C_m_delta_e*delta_e 
+	C_n = C_n_0 + C_n_beta*beta + C_n_p*b*0.5/V_a*p + C_n_r*b*0.5/V_a*r + C_n_delta_a*delta_a + C_n_delta_r*delta_r 
 \end{lstlisting}
-
-The coefficients which correspond to state variables ($C_{D\alpha}$, $C_{Dq}$, $C_{Y\beta}$, $C_{Yp}$, $C_{Yr}$, $C_{L\alpha}$, $C_{Lq}$, $C_{l\beta}$,
-$C_{lp}$, $C_{lr}$, $C_{m\alpha}$, $C_{mq}$, $C_{n\beta}$, $C_{np}$, $C_{nr}$) in most cases have values such that the resulting forces and moments tend to revert the aircraft to straight and level flight. Hence they are called \emph{stability derivatives}.
+%
+The coefficients which correspond to state variables ($C_{D,\alpha}$, $C_{D,q}$, $C_{Y,\beta}$, $C_{Y,p}$, $C_{Y,r}$, $C_{L,\alpha}$, $C_{L,q}$, $C_{l,\beta}$,
+$C_{l,p}$, $C_{l,r}$, $C_{m,\alpha}$, $C_{m,q}$, $C_{n,\beta}$, $C_{n,p}$, $C_{n,r}$) in most cases have values such that the resulting forces and moments tend to revert the aircraft to straight and level flight. Hence they are called \emph{stability derivatives}.
 
 On the other hand, coefficients which correspond to the input variables ($C_{D\delta e}$, $C_{D\delta a}$, $ C_{Y\delta r}$,
- $C_{L\delta e}$, $C_{l\delta_a}$, $C_{l\delta_r}$, $C_{m\delta_e}$, $C_{n\delta_a}$, $C_{n \delta_r}$) describe how the aircraft responds to control inputs and are hence called \emph{control derivatives}.
+ $C_{L,\delta_e}$, $C_{l,\delta_a}$, $C_{l,\delta_r}$, $C_{m,\delta_e}$, $C_{n,\delta_a}$, $C_{n,\delta_r}$) describe how the aircraft responds to control inputs and are hence called \emph{control derivatives}.
 
 \todo[inline]{Discuss about $C_{L\alpha}$ shape}
 
