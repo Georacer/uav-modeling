@@ -120,17 +120,14 @@ There also are hardware solutions which incorporate all three aforementioned sen
 \section{GPS Measurements}
 In order to have a reading of the absolute position of the aircraft in the inertial frame, be it the local NED frame or the global frame, defined by latitude and longitude, a GPS sensor is required. This is the only reasonable option, as radio-location is not a viable option for low-cost and low-weight robotic platforms. Whether the system will use a simple GPS receiver, a multi-constellation receiver, differential measurements or even RTK packages improves only the measurement accuracy.
 
-Common quantities reported by a GPS receiver are the longitude, latitude and altitude set. However, these do not correspond to the NED frame. In order to translate them to the north, east and down quantities we need to obtain the data on the curvature of the Earth at the location of interest. The following assumption should be adequate for the needs of a NED frame spanning a few kilometers to each direction of the starting coordinates.
+Common quantities reported by a GPS receiver are the longitude, latitude and altitude set. However, these do not correspond to the NED frame. In order to translate them to the north, east and down quantities we need to obtain the data on the curvature of the Earth at the location of interest. The following assumption should be adequate for the needs of a NED frame spanning a few kilometers to each direction of the starting coordinates. The related analysis was presented in Section \ref{sec:earth_model}.
 
-Having done the above necessary conversions, we can treat the GPS receiver as a sensor which reports displacement in the local NED frame
-\begin{equation}
-\bm{p_{gps}} = \bm{p}
-\end{equation}
+Regarding the GPS receiver itself, it can provide the geometric location triplet ($\phi$, $\theta$, $z$), i.e. the coordinates of the aircraft
 %
 \begin{lstlisting}
-	north_gps = north
-	east_gps = east
-	down_gps = down
+	lat_gps = lat
+	lon_gps = lon
+	z_gps = z
 \end{lstlisting}
 
 Additionally, most GPS receivers report ground speed and course angle
