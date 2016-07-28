@@ -4,24 +4,24 @@ If the model of Section \ref{sec:Beard_thruster} is not detailed enough,a clear 
 Much like the aerodynamics of the airplane lifting surfaces, propeller thrust is dependent upon a coefficient function ($C_t$), the air density ($\rho$) and its scale (propeller diameter $D$). Additionally, it is proportional to the square of its rotational speed $n$, which is expressed in revolutions per second. If SI units need be employed then $n$ can be easily swapped for $\omega_{prop}$ in \si{\radian \per \second} (\ref{eq:omega_to_n}).
 
 \begin{IEEEeqnarray}{rCl}
-	F_{tx} &= & C_t \rho n^2 D^4 \\
-	n_{prop} &= & \frac{\omega_{prop}}{2 \pi}
+	F_{tx} &= & C_t \rho n_{prop}^2 D^4 \\
+	n_{prop} &= & \frac{\omega_{prop}}{2 \pi} \label{eq:omega_to_n}
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	F_t_x = C_t*rho*n*n*D*D*D*D
-	n_prop = w_prop/2/pi \label{eq:omega_to_n}
+	F_t_x = C_t*rho*n_prop*n_prop*D*D*D*D
+	n_prop = w_prop/2/pi 
 \end{lstlisting}
 
 This time, the coefficient of thrust function has only one variable, the \emph{advance ratio} ($J$). This quantity is the ratio of the aircraft airspeed to the speed the propeller "screws" itself into the air volume. It is a means to quantify how efficiently the propeller forces itself into the air, in other words, its operational state. $C_T$ generally doesn't have a simple shape. It is usually given by propeller manufacturers as a data set, which peaks at the nominal advance ratio and falls off at either side of the advance ratio range. This function can adequately model propeller stall, as well as the windmilling effect.
 
 \begin{IEEEeqnarray}{rCl}
-	J &= & \frac{V_a}{nD} \\
+	J &= & \frac{V_a}{n_{prop}D} \\
 	C_t &=  & C_t(J) \label{eq:propCT}
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	Jar = V_a/n/D
+	Jar = V_a/n_prop/D
 \end{lstlisting}
 
 $C_t$ can be described as a polynomial of $J$, with a degree ranging from 3-6. A spline representation is also possible. Typical shapes of the $C_t$ curve can be seen in Figure \ref{fig:C_T}, for propellers with increasing pitch, ranging from \SI{0}{\degree} to \SI{40}{\degree}. Image taken from \cite{Allerton2009}.
@@ -45,7 +45,7 @@ In a similar fashion, there is an expression for the power that is consumed by t
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	P_{prop} = C_p*rho*n*n*n*D*D*D*D*D
+	P_prop = C_p*rho*n_prop*n_prop*n_prop*D*D*D*D*D
 \end{lstlisting}
 
 \begin{figure}
@@ -66,7 +66,7 @@ A detail included in this model, not mentioned in most resources, is the equatio
 \end{IEEEeqnarray}
 
 \begin{lstlisting}[style=C-style]
-	dot_n_prop = 1/(J_prop + J_mot)*(P_mot - P_prop)
+	dot_n_prop = 1/(J_prop + J_mot)*(P_mot - P_prop)/n_prop
 \end{lstlisting}
 
 Finally, the expression of propeller moment is simply derived from the ratio of the propeller power over the propeller rotational speed.

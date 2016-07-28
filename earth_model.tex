@@ -62,16 +62,24 @@ Regarding altitude, we consider that the vertical distance from the surface of t
 
 Summing up, we do the following steps to convert from geodetic coordinates to local coordinates:
 \begin{enumerate}
-	\item Note the starting coordinates $\phi_0$, $\lambda_0$ and altitude $h_0$
+	\item Note the starting coordinates $\phi_0$, $\lambda_0$ and altitude $z_0$
 	\item Calculate the radii of curvature $R_N(\phi_0)$ and $R_M(\phi_0)$
 \end{enumerate}
-For each GPS reading $(\phi, \lambda, h)$
+For each GPS reading $(\phi, \lambda, z)$
 \begin{enumerate}
-	\item Calculate the differences $\Delta \phi = \phi - \phi_0$, $\Delta \lambda = \lambda - \lambda_0$ and $\Delta h = h - h_0$
-	\item Calculate $n = (R_M + h) \sin \Delta \phi$
-	\item Calculate $e = (R_N + h) \sin \Delta \lambda$
-	\item Calculate $d = -\Delta h$
+	\item Calculate the differences $\Delta \phi = \phi - \phi_0$, $\Delta \lambda = \lambda - \lambda_0$ and $\Delta h = z - z_0$
+	\item Calculate $n = (R_M + z) \sin \Delta \phi$
+	\item Calculate $e = (R_N + z) \sin \Delta \lambda$
+	\item Calculate $d = -\Delta z$
 \end{enumerate}
+%
+\begin{lstlisting}
+	R_N = a_earth/sqrt(1-e2_earth*sin(lat)*sin(lat))
+	R_M = a_earth*(1-e2_earth)/pow(1-e2_earth*sin(lat)*sin(lat),1.5)
+	north = (R_M + z)*sin(lat-lat_0)
+	east = (R_N + z)*sin(lon-lon_0)
+	down = -(z - z_0)
+\end{lstlisting}
 
 In a different approach, we can treat the state of the GPS coordinates ($\phi$, $\lambda$, $h$) as a dynamic system, which is driven by $\dot{n}$, $\dot{e}$ and $\dot{d}$. Although more complicated, this procedure is suitable in cases where the trajectory of the aircraft is expected to arc around the Earth. In these cases the Flat Earth assumption breaks rendering the previous calculations invalid.
 

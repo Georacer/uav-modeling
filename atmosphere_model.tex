@@ -11,11 +11,17 @@ Additionally, the US Standard Atmosphere gravity model with respect to altitude 
 \begin{equation} \label{eq:usstdatmGravAlt}
 	g(z) = g_0 \left(\frac{r_0}{r_0+z}\right)
 \end{equation}
+
+\begin{lstlisting}[style=C-style]
+g = g_0*r_0/(r_0+z)
+\end{lstlisting}
+
 where
 \begin{itemize}
 	\item $z$ is the geometric altitude above the ellipsoid surface, as reported by GPS systems.
 	\item $r_0$ is the radius of the Earth at a latitude where $g_0$ takes its standard value of \SI{9.80665}{\m \per \square \s}. Considering a constant $g_0$ for all latitudes, $r_0$=\SI{6356.766}{\kilo \meter}.
 \end{itemize}
+
 The respective altitude model in WGS-84 is given in equation (4-3), for relatively low altitudes. Again, one can opt to use that model.
 
 Where all this matters, is in the definition of the \emph{geopotential altitude}, $h$. This is expressed in \emph{geopotential meters} ($m'$), a unit of altitude, lifting a mass by which, always requires the same amount of work, no matter at which altitude this work is performed. Essentially, this expresses how easier it gets to lift masses in the weakening gravity as altitude increases and, in turn, this affects how less densely atmosphere is packed as altitude increases.
@@ -30,10 +36,20 @@ Combining equations \ref{eq:stdGravity}, \ref{eq:usstdatmGravAlt} and \ref{eq:ge
 	z = \frac{r_0 \cdot h}{r_0 - h}
 \end{equation}
 
+\begin{lstlisting}[style=C-style]
+	h = r_0*z/(r_0 + z)
+	z = r_0*h/(r_0 + h)
+\end{lstlisting}
+
 Next, we need to include a temperature model as a function of altitude.
 \begin{equation}
 	T = T_0 + L_0 \cdot (h - h_0)
 \end{equation}
+
+\begin{lstlisting}
+	T = T_0 + L_0*(h - h_0)
+\end{lstlisting}
+
 where
 \begin{itemize}
 	\item $h_0$ is the initialization altitude.
@@ -46,6 +62,11 @@ Finally, we can express the variation of barometric pressure as a function of ge
 \begin{equation}
 	P = P_0\left( \frac{T_{0}}{T(h)} \right) ^ {\left( \frac{g_0 \cdot M_0}{R^* \cdot L_{0}} \right)}
 \end{equation}
+
+\begin{lstlisting}
+	P = P_0*pow(T_0/T,g_0*M_0/R_star/L_0)
+\end{lstlisting}
+
 where
 \begin{itemize}
 	\item $P_0$ is the pressure at our initialization altitude. According to the US Standard Atmosphere, at sea-level its value is $P_0$ = \SI{101325}{\newton\per\square\meter} = \SI{1013.25}{\milli\bar}, but again, real time on site measurements are preferred.
@@ -58,7 +79,15 @@ Most importantly, one can solve this equation for $h$ and obtain the geopotentia
 	h = \frac{T_0}{L_0}	\left( \left(\frac{P}{P_0}\right)^{\frac{g_0\cdot M_0}{R^* \cdot L_0}} -1\right) + h_0
 \end{equation}
 
+\begin{lstlisting}
+	h = T_0/L_0*(pow(P/P_0,g_0*M_0/R_star/L_0)-1) + h_0
+\end{lstlisting}
+
 Air density can be obtained from the air pressure model
 \begin{equation}
 	\rho = \frac{P \cdot M_0}{R^* \cdot T}
 \end{equation}
+
+\begin{lstlisting}
+	rho = P*M_0/R_star/T
+\end{lstlisting}
