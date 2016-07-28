@@ -5,11 +5,23 @@ In this chapter the forces and moments exerted on the aircraft will be presented
 	\bm{F}_b = \bm{F}_g + \bm{F}_a + \bm{F}_t
 \end{equation}
 
+\begin{lstlisting}
+	F_x = F_g_x + F_a_x + F_t_x
+	F_y = F_g_y + F_a_y + F_t_y
+	F_z + F_g_z + F_a_z + F_t_z
+\end{lstlisting}
+
 Naturally, we consider that gravity does not exert moments on the rigid body aircraft.
 
 \begin{equation}
-	\bm{T}_b = \bm{T}_{tot,a} + \bm{T}_{tot,t}
+	\bm{T}_b = \bm{T}_{a,tot} + \bm{T}_{t,tot}
 \end{equation}
+
+\begin{lstlisting}
+	T_x = T_atot_x + T_ttot_x
+	T_y = T_atot_y + T_ttot_y
+	T_z = T_atot_z + T_ttot_z
+\end{lstlisting}
 
 Before proceeding to any definitions, it is worth mentioning the control input variables. In normal airplane configurations, there are four control dimensions which the pilot can affect. These correspond to three sets of control surfaces (aileron, elevator and rudder) and the throttle command. The notation for these control variables is $\delta_a, \delta_a, \delta_t, \delta_r$. Essentially, these are the input variables to the aircraft model.$\delta_a, \delta_e,$ and $\delta_r$ are usually expressed in degrees of deflection from the neutral (zero) angle and $\delta_t$ is normalized in the (0,1) range.
 
@@ -79,7 +91,7 @@ Naturally, the motor and propeller produce moments. Similarly to the aerodynamic
 	\bm{T_t} = \begin{bmatrix}
 		T_{tx} \\ T_{ty} \\ T_{tz}
 	\end{bmatrix}
-	 + (\bm{p}_{prop}-\bm{p}_{CG})\times \bm{F}_p
+	 + (\bm{p}_{prop}-\bm{p}_{CM})\times \bm{F}_p
 \end{equation}
 \begin{IEEEeqnarray}{rCl}
 	T_{tx,tot} &= & T_{tx} -dz F_{ty} + dy F_{tz}\IEEEyessubnumber\\
@@ -93,7 +105,7 @@ dy = p_prop_y - p_cm_y
 dz = p_prop_z - p_cm_z
 T_ttot_x = T_t_x - dz*F_t_y + dy*F_t_z
 T_ttot_y = T_t_y + dz*F_t_x - dx*F_t_z
-T_ttot_z = T_t_z - dy*F_t_z + dx*F_t_y
+T_ttot_z = T_t_z - dy*F_t_x + dx*F_t_y
 \end{lstlisting}
 
 We opt to consider in our model only the aforementioned counter-moment produced in the x-axis by the propeller and motor, and not gyroscopic effects caused by the spinning propeller disc:
