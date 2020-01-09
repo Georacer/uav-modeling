@@ -12,8 +12,6 @@ Zogopoulos Papaliakos, G. (2016). Modeling a Fixed-Wing UAV A Collection of Equa
 @book{ZogopoulosPapaliakos2016,
 author = {{Zogopoulos Papaliakos}, George},
 edition = {2},
-file = {:media/Data/Dropbox/Textbooks/UAV/Modelling/modeling a fixed-wing UAV.pdf:pdf},
-mendeley-groups = {Modelling,Books},
 title = {{Modeling a Fixed-Wing UAV A Collection of Equations}},
 url = {https://github.com/Georacer/uav-modeling},
 year = {2016}
